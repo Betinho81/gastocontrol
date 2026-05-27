@@ -5,31 +5,39 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 export const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const PASSWORDS = {
+  'jorgehrueda@hotmail.com': 'admin123',
+  'maria_victoria_trujillo@hotmail.com': 'gestion123',
+  'umipereira@opticasvisionysol.com.co': 'UMI-PEI',
+  'comexc@opticasvisionysol.com.co': 'BGA-CENTRO',
+  'opticasvisionysolarmenia@gmail.com': 'Palacio-2',
+  'opticasvisionysol.pereira@gmail.com': 'VYS-PEREIRA',
+  'opticasvisionysol.barranquilla@gmail.com': 'BQUILLA',
+  'comint@opticasvisionysol.com.co': 'CABECERA'
+};
+
 export async function login(email, password, sedeId) {
+  const emailLower = email.toLowerCase().trim();
+
   const { data: usuario } = await sb
     .from('usuarios')
     .select('*, sedes(nombre)')
-    .eq('email', email.toLowerCase().trim())
+    .eq('email', emailLower)
     .eq('activo', true)
     .single();
 
   if (!usuario) return { ok: false, error: 'Usuario no encontrado o inactivo' };
 
-  // Verificar que la sede seleccionada corresponde al usuario (solo admin puede elegir cualquier sede)
+  const passCorrecta = PASSWORDS[emailLower];
+  if (!passCorrecta || password !== passCorrecta) {
+    return { ok: false, error: 'Contraseña incorrecta' };
+  }
+
   if (usuario.rol !== 'admin' && usuario.sede_id !== sedeId) {
     return { ok: false, error: 'No tienes acceso a esa sede' };
   }
 
-  // Verificacion de contrasena
-  const passMap = {
-    'jorgehrueda@hotmail.com': 'admin123',
-    'maria_victoria_trujillo@hotmail.com': 'gestion123'
-  };
-  if (passMap[email.toLowerCase()] !== password) {
-    return { ok: false, error: 'Contraseña incorrecta' };
-  }
-
-  const sedeSeleccionada = usuario.rol === 'admin' 
+  const sedeSeleccionada = usuario.rol === 'admin'
     ? (await sb.from('sedes').select('nombre').eq('id', sedeId).single()).data
     : usuario.sedes;
 
