@@ -1,0 +1,429 @@
+import { sb, getUser, logout, requireAuth } from './supabase.js';
+
+const user = requireAuth();
+document.getElementById('sedeChip').textContent = user.sedeNombre;
+document.getElementById('userName').textContent = user.nombre;
+
+if (user.rol === 'admin') {
+  ['tabReportes','tabProveedores','tabAdmin'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+}
+
+// ── ESTADO ──────────────────────────────────────────────────
+let cats = [], subs = [], provs = [], gastos = [], sedes = [];
+let wStep = 0, wData = {};
+let editProvId = null;
+
+const COLORS = ['#1A5276','#1a7a4a','#7d4e00','#7f1d1d','#4c1d95','#9a3412','#065f46','#831843','#334155'];
+const CAT_CLASS = {
+  'Insumos de Aseo':'b-aseo','Papelería':'b-papeleria','Cafetería':'b-cafeteria',
+  'Seguridad':'b-seguridad','Mantenimiento':'b-mantenimiento','Gasolina':'b-gasolina',
+  'Servicios públicos':'b-servicios','Insumos':'b-insumos','Nóminas':'b-nominas'
+};
+
+// ── CARGA INICIAL ────────────────────────────────────────────
+async function init() {
+  const [c, s, p, g, sd] = await Promise.all([
+    sb.from('categorias').select('*').order('nombre'),
+    sb.from('subcategorias').select('*').order('nombre'),
+    sb.from('proveedores').select('*, categorias(nombre)').eq('activo', true).order('nombre_comercial'),
+    sb.from('gastos').select(`*, categorias(nombre), subcategorias(nombre), proveedores(nit,razon_social,nombre_comercial), sedes(nombre)`).eq('sede_id', user.sedeId).order('fecha', { ascending: false }),
+    sb.from('sedes').select('*').eq('activa', true).order('nombre'),
+  ]);
+  cats = c.data || [];
+  subs = s.data || [];
+  provs = p.data || [];
+  gastos = g.data || [];
+  sedes = sd.data || [];
+
+  renderGastos();
+  renderMetrics();
+  initFiltros();
+}
+init();
+
+// ── TABS ─────────────────────────────────────────────────────
+window.showTab = function(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['panelGastos','panelReportes','panelProveedores','panelAdmin'].forEach(id => {
+    document.getElementById(id).classList.toggle('hidden', id !== 'panel' + name.charAt(0).toUpperCase() + name.slice(1));
+  });
+  if (name === 'reportes') applyFilters();
+  if (name === 'proveedores') renderProveedores();
+  if (name === 'admin') renderAdmin();
+};
+
+// ── LOGOUT ───────────────────────────────────────────────────
+window.gc = window.gc || {};
+window.gc.logout = logout;
+
+// ── GASTOS ───────────────────────────────────────────────────
+function renderMetrics() {
+  const total = gastos.reduce((s, g) => s + Number(g.valor), 0);
+  const hoy = new Date().toISOString().slice(0, 7);
+  const mes = gastos.filter(g => g.fecha?.startsWith(hoy)).reduce((s, g) => s + Number(g.valor), 0);
+  document.getElementById('metricCards').innerHTML = `
+    <div class="metric-card"><div class="m-label">Registros</div><div class="m-value">${gastos.length}</div><div class="m-sub">${user.sedeNombre}</div></div>
+    <div class="metric-card"><div class="m-label">Total acumulado</div><div class="m-value">$${total.toLocaleString('es-CO')}</div></div>
+    <div class="metric-card"><div class="m-label">Este mes</div><div class="m-value">$${mes.toLocaleString('es-CO')}</div></div>
+    <div class="metric-card"><div class="m-label">Categorías</div><div class="m-value">${[...new Set(gastos.map(g => g.categoria_id))].length}</div></div>`;
+}
+
+function renderGastos() {
+  const tb = document.getElementById('gastosTable');
+  if (!gastos.length) {
+    tb.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📋</div><p>No hay gastos registrados aún</p></div></td></tr>';
+    return;
+  }
+  tb.innerHTML = gastos.map(g => {
+    const cat = g.categorias?.nombre || '';
+    const pv = g.proveedores || {};
+    return `<tr>
+      <td>${g.fecha}</td>
+      <td><span class="badge ${CAT_CLASS[cat] || ''}">${cat}</span></td>
+      <td style="color:var(--text-sec)">${g.subcategorias?.nombre || ''}</td>
+      <td>${pv.nombre_comercial || pv.razon_social || ''}</td>
+      <td style="font-size:11px;color:var(--text-sec);font-family:'DM Mono',monospace">${pv.nit || ''}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.descripcion}</td>
+      <td style="font-weight:600;font-family:'DM Mono',monospace">$${Number(g.valor).toLocaleString('es-CO')}</td>
+      <td>${g.foto_url ? `<img class="foto-thumb" src="${g.foto_url}" onclick="window.open('${g.foto_url}')">` : '<span style="color:var(--text-ter);font-size:12px">—</span>'}</td>
+      <td><span class="lock-badge">🔒</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── WIZARD ───────────────────────────────────────────────────
+const WSTEPS = ['Categoría', 'Subcategoría', 'Proveedor', 'Factura'];
+
+window.gc.openWizard = function() {
+  wStep = 0; wData = {};
+  renderWizard();
+  document.getElementById('wizardOverlay').classList.remove('hidden');
+};
+window.gc.closeWizard = function() {
+  document.getElementById('wizardOverlay').classList.add('hidden');
+};
+window.gc.wizBack = function() { if (wStep > 0) { wStep--; renderWizard(); } };
+window.gc.wizNext = async function() {
+  if (wStep === 0 && !wData.catId) return;
+  if (wStep === 1 && !wData.subId) return;
+  if (wStep === 2 && !wData.provId) return;
+  if (wStep === 3) { await saveGasto(); return; }
+  wStep++;
+  renderWizard();
+};
+
+function renderWizard() {
+  document.getElementById('wizSteps').innerHTML = WSTEPS.map((s, i) =>
+    `<div class="wiz-step ${i < wStep ? 'done' : i === wStep ? 'active' : ''}">
+      <div class="wiz-num">${i < wStep ? '✓' : i + 1}</div>${s}</div>`
+  ).join('');
+  document.getElementById('wizBtnBack').style.visibility = wStep === 0 ? 'hidden' : 'visible';
+  document.getElementById('wizBtnNext').textContent = wStep === 3 ? 'Guardar gasto' : 'Siguiente';
+  const body = document.getElementById('wizBody');
+
+  if (wStep === 0) {
+    body.innerHTML = `<p style="font-size:13px;color:var(--text-sec);margin-bottom:1rem">Selecciona la categoría del gasto</p>
+      <div class="opt-grid">${cats.map(c =>
+        `<button class="opt-btn ${wData.catId === c.id ? 'sel' : ''}" onclick="window.gc.selW('catId','${c.id}','catNombre','${c.nombre}')">
+          <div class="opt-name">${c.nombre}</div></button>`
+      ).join('')}</div>`;
+  } else if (wStep === 1) {
+    const filtSubs = subs.filter(s => s.categoria_id === wData.catId);
+    body.innerHTML = `<p style="font-size:13px;color:var(--text-sec);margin-bottom:1rem">Subcategoría en <strong>${wData.catNombre}</strong></p>
+      <div class="opt-grid">${filtSubs.map(s =>
+        `<button class="opt-btn ${wData.subId === s.id ? 'sel' : ''}" onclick="window.gc.selW('subId','${s.id}','subNombre','${s.nombre}')">
+          <div class="opt-name">${s.nombre}</div></button>`
+      ).join('')}</div>`;
+  } else if (wStep === 2) {
+    const filtProvs = provs.filter(p => !p.categoria_id || p.categorias?.nombre === wData.catNombre);
+    const lista = filtProvs.length ? filtProvs : provs;
+    body.innerHTML = `<p style="font-size:13px;color:var(--text-sec);margin-bottom:1rem">Selecciona el proveedor</p>
+      ${lista.map(p =>
+        `<div class="prov-opt ${wData.provId === p.id ? 'sel' : ''}" onclick="window.gc.selProv('${p.id}')">
+          <div class="pn">${p.nombre_comercial || p.razon_social}</div>
+          <div class="ps">NIT: ${p.nit} · ${p.razon_social}</div>
+        </div>`
+      ).join('')}`;
+  } else if (wStep === 3) {
+    const pv = provs.find(p => p.id === wData.provId) || {};
+    body.innerHTML = `
+      <div class="prov-info-card"><strong>${pv.razon_social}</strong>NIT: ${pv.nit}${pv.ciudad ? ' · ' + pv.ciudad : ''}</div>
+      <div class="form-row">
+        <div class="form-group"><label>Fecha de la factura</label>
+          <input type="date" id="wFecha" value="${new Date().toISOString().split('T')[0]}"></div>
+        <div class="form-group"><label>Valor ($)</label>
+          <input type="number" id="wValor" placeholder="0" min="0"></div>
+      </div>
+      <div class="form-group"><label>Descripción del gasto</label>
+        <textarea id="wDesc" placeholder="Describe el gasto realizado..."></textarea></div>
+      <div class="form-group"><label>Foto de la factura</label>
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+          📷 Toca para subir foto de la factura
+        </div>
+        <img id="fotoPreview" class="upload-preview hidden" alt="vista previa">
+      </div>
+      <div class="info-note">🔒 Una vez guardado, el registro no podrá ser modificado</div>`;
+  }
+}
+
+window.gc.selW = function(k1, v1, k2, v2) { wData[k1] = v1; wData[k2] = v2; renderWizard(); };
+window.gc.selProv = function(id) { wData.provId = id; renderWizard(); };
+
+window.gc.handlePhoto = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    wData.fotoData = ev.target.result;
+    wData.fotoFile = file;
+    const pr = document.getElementById('fotoPreview');
+    if (pr) { pr.src = ev.target.result; pr.classList.remove('hidden'); }
+  };
+  reader.readAsDataURL(file);
+};
+
+async function saveGasto() {
+  const desc = document.getElementById('wDesc')?.value?.trim();
+  const valor = parseFloat(document.getElementById('wValor')?.value) || 0;
+  const fecha = document.getElementById('wFecha')?.value;
+  if (!desc || valor <= 0) { alert('Completa descripción y valor'); return; }
+
+  document.getElementById('wizBtnNext').disabled = true;
+  document.getElementById('wizBtnNext').textContent = 'Guardando...';
+
+  let foto_url = null;
+  if (wData.fotoFile) {
+    const ext = wData.fotoFile.name.split('.').pop();
+    const path = `facturas/${Date.now()}.${ext}`;
+    const { data: upData } = await sb.storage.from('fotos').upload(path, wData.fotoFile, { upsert: true });
+    if (upData) {
+      const { data: urlData } = sb.storage.from('fotos').getPublicUrl(path);
+      foto_url = urlData?.publicUrl;
+    }
+  }
+
+  const { data, error } = await sb.from('gastos').insert({
+    sede_id: user.sedeId,
+    usuario_id: user.id,
+    categoria_id: wData.catId,
+    subcategoria_id: wData.subId,
+    proveedor_id: wData.provId,
+    descripcion: desc,
+    valor,
+    fecha,
+    foto_url
+  }).select(`*, categorias(nombre), subcategorias(nombre), proveedores(nit,razon_social,nombre_comercial), sedes(nombre)`).single();
+
+  if (!error && data) {
+    gastos.unshift(data);
+    renderGastos();
+    renderMetrics();
+    window.gc.closeWizard();
+  } else {
+    alert('Error al guardar. Intenta de nuevo.');
+    document.getElementById('wizBtnNext').disabled = false;
+    document.getElementById('wizBtnNext').textContent = 'Guardar gasto';
+  }
+}
+
+// ── REPORTES ─────────────────────────────────────────────────
+async function initFiltros() {
+  const sedeEl = document.getElementById('fSede');
+  sedes.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = s.nombre; sedeEl.appendChild(o); });
+  const catEl = document.getElementById('fCat');
+  cats.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.nombre; catEl.appendChild(o); });
+  const subEl = document.getElementById('fSub');
+  subs.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = s.nombre; subEl.appendChild(o); });
+  const provEl = document.getElementById('fProv');
+  provs.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre_comercial || p.razon_social; provEl.appendChild(o); });
+}
+
+async function getFiltered() {
+  let q = sb.from('gastos').select(`*, categorias(nombre), subcategorias(nombre), proveedores(nit,razon_social,nombre_comercial,direccion,correo), sedes(nombre)`);
+  const vs = document.getElementById('fSede')?.value;
+  const vc = document.getElementById('fCat')?.value;
+  const vsu = document.getElementById('fSub')?.value;
+  const vp = document.getElementById('fProv')?.value;
+  const vd = document.getElementById('fDesde')?.value;
+  const vh = document.getElementById('fHasta')?.value;
+  if (vs) q = q.eq('sede_id', vs);
+  else if (user.rol !== 'admin') q = q.eq('sede_id', user.sedeId);
+  if (vc) q = q.eq('categoria_id', vc);
+  if (vsu) q = q.eq('subcategoria_id', vsu);
+  if (vp) q = q.eq('proveedor_id', vp);
+  if (vd) q = q.gte('fecha', vd);
+  if (vh) q = q.lte('fecha', vh);
+  q = q.order('fecha', { ascending: false });
+  const { data } = await q;
+  return data || [];
+}
+
+window.gc.applyFilters = async function() {
+  const data = await getFiltered();
+  const total = data.reduce((s, g) => s + Number(g.valor), 0);
+  const sedesU = [...new Set(data.map(g => g.sedes?.nombre))].filter(Boolean);
+  document.getElementById('rMetrics').innerHTML = `
+    <div class="metric-card"><div class="m-label">Registros</div><div class="m-value">${data.length}</div></div>
+    <div class="metric-card"><div class="m-label">Total</div><div class="m-value">$${total.toLocaleString('es-CO')}</div></div>
+    <div class="metric-card"><div class="m-label">Sedes</div><div class="m-value">${sedesU.length}</div></div>
+    <div class="metric-card"><div class="m-label">Promedio</div><div class="m-value">$${data.length ? Math.round(total / data.length).toLocaleString('es-CO') : '0'}</div></div>`;
+
+  renderBar('chartCat', cats.map(c => ({ label: c.nombre, val: data.filter(g => g.categoria_id === c.id).reduce((s, g) => s + Number(g.valor), 0) })));
+  renderBar('chartSede', sedes.map(s => ({ label: s.nombre, val: data.filter(g => g.sede_id === s.id).reduce((a, g) => a + Number(g.valor), 0) })));
+  const provTotals = provs.map(p => ({ label: p.nombre_comercial || p.razon_social, val: data.filter(g => g.proveedor_id === p.id).reduce((s, g) => s + Number(g.valor), 0) })).filter(x => x.val > 0).sort((a, b) => b.val - a.val).slice(0, 5);
+  renderBarData('chartProv', provTotals);
+
+  document.getElementById('reporteTable').innerHTML = data.length ? data.map(g => {
+    const cat = g.categorias?.nombre || ''; const pv = g.proveedores || {};
+    return `<tr>
+      <td>${g.fecha}</td>
+      <td><span style="font-size:11px;background:var(--bg);padding:2px 8px;border-radius:20px">${g.sedes?.nombre || ''}</span></td>
+      <td><span class="badge ${CAT_CLASS[cat] || ''}">${cat}</span></td>
+      <td style="color:var(--text-sec)">${g.subcategorias?.nombre || ''}</td>
+      <td>${pv.nombre_comercial || pv.razon_social || ''}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${pv.nit || ''}</td>
+      <td style="font-size:12px">${pv.razon_social || ''}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.descripcion}</td>
+      <td style="font-weight:600;font-family:'DM Mono',monospace">$${Number(g.valor).toLocaleString('es-CO')}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="9"><div class="empty-state"><p>Sin resultados para los filtros aplicados</p></div></td></tr>';
+};
+
+window.gc.limpiarFiltros = function() {
+  ['fSede','fCat','fSub','fProv'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['fDesde','fHasta'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  window.gc.applyFilters();
+};
+
+function renderBar(elId, items) {
+  const mx = Math.max(...items.map(x => x.val), 1);
+  document.getElementById(elId).innerHTML = items.filter(x => x.val > 0).map((x, i) => {
+    const pct = Math.round(x.val / mx * 100);
+    return `<div class="bar-row"><div class="bar-label">${x.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${COLORS[i % COLORS.length]}">${pct > 18 ? '$' + x.val.toLocaleString('es-CO') : ''}</div></div>
+      <div class="bar-val">$${x.val.toLocaleString('es-CO')}</div></div>`;
+  }).join('') || '<p style="font-size:12px;color:var(--text-ter)">Sin datos</p>';
+}
+function renderBarData(elId, arr) {
+  const mx = Math.max(...arr.map(x => x.val), 1);
+  document.getElementById(elId).innerHTML = arr.map((x, i) => {
+    const pct = Math.round(x.val / mx * 100);
+    return `<div class="bar-row"><div class="bar-label">${x.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${COLORS[i % COLORS.length]}">${pct > 18 ? '$' + x.val.toLocaleString('es-CO') : ''}</div></div>
+      <div class="bar-val">$${x.val.toLocaleString('es-CO')}</div></div>`;
+  }).join('') || '<p style="font-size:12px;color:var(--text-ter)">Sin datos</p>';
+}
+
+// ── EXPORT CSV ───────────────────────────────────────────────
+window.gc.exportCSV = async function() {
+  const data = await getFiltered();
+  const header = 'Fecha,Sede,Categoría,Subcategoría,Proveedor,NIT,Razón Social,Dirección,Correo,Descripción,Valor\n';
+  const rows = data.map(g => {
+    const pv = g.proveedores || {};
+    return `${g.fecha},${g.sedes?.nombre || ''},${g.categorias?.nombre || ''},${g.subcategorias?.nombre || ''},${pv.nombre_comercial || ''},${pv.nit || ''},${pv.razon_social || ''},${pv.direccion || ''},${pv.correo || ''},"${g.descripcion}",${g.valor}`;
+  }).join('\n');
+  const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'reporte_gastos.csv'; a.click();
+};
+
+// ── EXPORT EXCEL (via servidor) ──────────────────────────────
+window.gc.exportExcel = async function() {
+  const data = await getFiltered();
+  const payload = { gastos: data, proveedores: provs, sedes };
+  const resp = await fetch('/api/export-excel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (resp.ok) {
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'reporte_gastos.xlsx'; a.click();
+  } else {
+    alert('Error al generar Excel. Usa la exportación CSV por ahora.');
+  }
+};
+
+// ── PROVEEDORES ──────────────────────────────────────────────
+function renderProveedores() {
+  if (!provs.length) { document.getElementById('provTable').innerHTML = '<p style="color:var(--text-sec)">No hay proveedores registrados.</p>'; return; }
+  document.getElementById('provTable').innerHTML = `<div class="table-card"><table><thead><tr>
+    <th>NIT</th><th>Razón Social</th><th>Nombre comercial</th><th>Ciudad</th><th>Correo</th><th>Teléfono</th><th>Categoría</th><th></th>
+  </tr></thead><tbody>${provs.map(p => `<tr>
+    <td style="font-family:'DM Mono',monospace;font-weight:500">${p.nit}</td>
+    <td>${p.razon_social}</td>
+    <td style="color:var(--text-sec)">${p.nombre_comercial || '—'}</td>
+    <td>${p.ciudad || '—'}</td>
+    <td style="color:var(--azul-med);font-size:12px">${p.correo || '—'}</td>
+    <td>${p.telefono || '—'}</td>
+    <td><span class="badge ${CAT_CLASS[p.categorias?.nombre] || ''}">${p.categorias?.nombre || '—'}</span></td>
+    <td><button class="btn-sec" style="padding:4px 10px;font-size:12px" onclick="window.gc.editProv('${p.id}')">Editar</button></td>
+  </tr>`).join('')}</tbody></table></div>`;
+}
+
+window.gc.openProvModal = function(id) {
+  editProvId = id || null;
+  document.getElementById('provModalTitle').textContent = id ? 'Editar proveedor' : 'Nuevo proveedor';
+  const catSel = document.getElementById('pCat');
+  catSel.innerHTML = '<option value="">Seleccionar...</option>' + cats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+  if (id) {
+    const p = provs.find(x => x.id === id);
+    document.getElementById('pNit').value = p.nit;
+    document.getElementById('pRs').value = p.razon_social;
+    document.getElementById('pNombre').value = p.nombre_comercial || '';
+    document.getElementById('pDir').value = p.direccion || '';
+    document.getElementById('pCiudad').value = p.ciudad || '';
+    document.getElementById('pCorreo').value = p.correo || '';
+    document.getElementById('pTel').value = p.telefono || '';
+    catSel.value = p.categoria_id || '';
+  } else {
+    ['pNit','pRs','pNombre','pDir','pCiudad','pCorreo','pTel'].forEach(id => document.getElementById(id).value = '');
+    catSel.value = '';
+  }
+  document.getElementById('provErr').style.display = 'none';
+  document.getElementById('provOverlay').classList.remove('hidden');
+};
+window.gc.editProv = id => window.gc.openProvModal(id);
+window.gc.closeProvModal = () => document.getElementById('provOverlay').classList.add('hidden');
+
+window.gc.saveProv = async function() {
+  const nit = document.getElementById('pNit').value.trim();
+  const rs = document.getElementById('pRs').value.trim();
+  if (!nit || !rs) { document.getElementById('provErr').style.display = 'block'; return; }
+  const obj = { nit, razon_social: rs, nombre_comercial: document.getElementById('pNombre').value.trim() || rs,
+    direccion: document.getElementById('pDir').value.trim(), ciudad: document.getElementById('pCiudad').value.trim(),
+    correo: document.getElementById('pCorreo').value.trim(), telefono: document.getElementById('pTel').value.trim(),
+    categoria_id: document.getElementById('pCat').value || null };
+
+  if (editProvId) {
+    const { data } = await sb.from('proveedores').update(obj).eq('id', editProvId).select('*, categorias(nombre)').single();
+    if (data) { const idx = provs.findIndex(p => p.id === editProvId); provs[idx] = data; }
+  } else {
+    const { data } = await sb.from('proveedores').insert(obj).select('*, categorias(nombre)').single();
+    if (data) provs.push(data);
+  }
+  window.gc.closeProvModal();
+  renderProveedores();
+};
+
+// ── ADMIN ────────────────────────────────────────────────────
+async function renderAdmin() {
+  const { data: usuarios } = await sb.from('usuarios').select('*');
+  document.getElementById('adminUsers').innerHTML = (usuarios || []).map(u =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:6px">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--azul-clar);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--azul)">${u.nombre[0]}</div>
+      <div><div style="font-size:13px;font-weight:500">${u.nombre}</div><div style="font-size:11px;color:var(--text-sec)">${u.email} · ${u.rol}</div></div>
+    </div>`).join('');
+
+  document.getElementById('adminSedes').innerHTML = sedes.map(s => {
+    const n = gastos.filter(g => g.sede_id === s.id).length;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:500">${s.nombre}</span>
+      <span style="font-size:12px;color:var(--text-sec)">${n} registros</span></div>`;
+  }).join('');
+
+  const { data: todosGastos } = await sb.from('gastos').select('*, categorias(nombre)');
+  renderBar('adminChart', cats.map(c => ({ label: c.nombre, val: (todosGastos || []).filter(g => g.categoria_id === c.id).reduce((s, g) => s + Number(g.valor), 0) })));
+}
