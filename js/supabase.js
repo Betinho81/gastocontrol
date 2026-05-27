@@ -6,29 +6,41 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 export const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 export async function login(email, password, sedeId) {
-  const { data: usuarios } = await sb
+  const { data: usuario } = await sb
     .from('usuarios')
-    .select('*')
-    .eq('email', email)
+    .select('*, sedes(nombre)')
+    .eq('email', email.toLowerCase().trim())
     .eq('activo', true)
     .single();
 
-  if (!usuarios) return { ok: false, error: 'Usuario no encontrado o inactivo' };
+  if (!usuario) return { ok: false, error: 'Usuario no encontrado o inactivo' };
 
-  // Verificacion simple de contrasena (en produccion usar Supabase Auth)
-  const passOk = (email === 'admin@demo.com' && password === 'admin123') ||
-                 (email === 'user@demo.com' && password === 'user123');
-  if (!passOk) return { ok: false, error: 'Contraseña incorrecta' };
+  // Verificar que la sede seleccionada corresponde al usuario (solo admin puede elegir cualquier sede)
+  if (usuario.rol !== 'admin' && usuario.sede_id !== sedeId) {
+    return { ok: false, error: 'No tienes acceso a esa sede' };
+  }
 
-  const { data: sede } = await sb.from('sedes').select('*').eq('id', sedeId).single();
+  // Verificacion de contrasena
+  const passMap = {
+    'jorgehrueda@hotmail.com': 'admin123',
+    'maria_victoria_trujillo@hotmail.com': 'gestion123'
+  };
+  if (passMap[email.toLowerCase()] !== password) {
+    return { ok: false, error: 'Contraseña incorrecta' };
+  }
+
+  const sedeSeleccionada = usuario.rol === 'admin' 
+    ? (await sb.from('sedes').select('nombre').eq('id', sedeId).single()).data
+    : usuario.sedes;
 
   sessionStorage.setItem('gc_user', JSON.stringify({
-    id: usuarios.id,
-    nombre: usuarios.nombre,
-    email: usuarios.email,
-    rol: usuarios.rol,
-    sedeId: sedeId,
-    sedeNombre: sede?.nombre || ''
+    id: usuario.id,
+    nombre: usuario.nombre,
+    email: usuario.email,
+    rol: usuario.rol,
+    sedeId: usuario.rol === 'admin' ? sedeId : usuario.sede_id,
+    sedeNombre: sedeSeleccionada?.nombre || '',
+    sedePropiaId: usuario.sede_id
   }));
   return { ok: true };
 }
