@@ -3,44 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GastoControl — Login</title>
+  <title>GastoControl — UMI Salud Visual</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --azul: #1A5276; --azul-med: #2E86C1; --azul-clar: #EBF5FB;
+      --celeste: #00AEEF; --negro: #1a1a2e;
       --text: #1a1a2e; --text-sec: #6b7280; --borde: #e5e7eb;
-      --bg: #f8fafc; --blanco: #ffffff; --error: #dc2626; --radio: 12px;
+      --bg: #f0f7ff; --blanco: #ffffff; --error: #dc2626; --radio: 12px;
     }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-    .wrap { width: 100%; max-width: 420px; }
-    .logo-area { text-align: center; margin-bottom: 2rem; }
-    .logo-icon { width: 52px; height: 52px; background: var(--azul); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 24px; color: #fff; }
-    .logo-area h1 { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
-    .logo-area p { font-size: 14px; color: var(--text-sec); margin-top: 4px; }
-    .card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px; padding: 2rem; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Decoración óptica de fondo */
+    .bg-deco {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    }
+    .lens {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(0,174,239,0.12);
+    }
+    .lens-1 { width: 300px; height: 300px; top: -80px; left: -80px; }
+    .lens-2 { width: 200px; height: 200px; bottom: -50px; right: -50px; }
+    .lens-3 { width: 150px; height: 150px; top: 40%; right: 5%; }
+    .dots {
+      position: absolute; top: 10px; right: 80px;
+      display: grid; grid-template-columns: repeat(6,1fr); gap: 6px;
+    }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(0,174,239,0.2); }
+    .wrap { width: 100%; max-width: 420px; position: relative; z-index: 1; }
+    .logo-area {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .logo-img-wrap {
+      width: 110px; height: 110px;
+      background: var(--blanco);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      box-shadow: 0 4px 20px rgba(0,174,239,0.15);
+      padding: 10px;
+      border: 1px solid rgba(0,174,239,0.2);
+    }
+    .logo-img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-emoji { font-size: 48px; }
+    .logo-area h1 { font-size: 13px; font-weight: 500; color: var(--text-sec); letter-spacing: 1px; text-transform: uppercase; }
+    .logo-area p { font-size: 20px; font-weight: 600; color: var(--azul); margin-top: 2px; letter-spacing: -0.5px; }
+    .card {
+      background: var(--blanco);
+      border: 1px solid rgba(0,174,239,0.2);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0,174,239,0.08);
+    }
+    .card-title {
+      font-size: 14px; font-weight: 500; color: var(--text-sec);
+      margin-bottom: 1.5rem; text-align: center;
+    }
     .field { margin-bottom: 1.1rem; }
     .field label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
-    .field input, .field select { width: 100%; padding: 10px 14px; border: 1px solid var(--borde); border-radius: var(--radio); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--blanco); outline: none; transition: border-color .2s; }
-    .field input:focus, .field select:focus { border-color: var(--azul-med); box-shadow: 0 0 0 3px rgba(46,134,193,0.1); }
-    .btn { width: 100%; padding: 12px; background: var(--azul); color: #fff; border: none; border-radius: var(--radio); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 0.5rem; transition: background .2s; }
-    .btn:hover { background: #154360; }
+    .field input, .field select {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--borde);
+      border-radius: var(--radio);
+      font-family: 'DM Sans', sans-serif; font-size: 14px;
+      color: var(--text); background: var(--blanco); outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--celeste);
+      box-shadow: 0 0 0 3px rgba(0,174,239,0.1);
+    }
+    .btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #1A5276, #00AEEF);
+      color: #fff; border: none; border-radius: var(--radio);
+      font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 0.5rem;
+      transition: opacity .2s, transform .1s;
+      letter-spacing: 0.3px;
+    }
+    .btn:hover { opacity: 0.92; }
+    .btn:active { transform: scale(0.98); }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .error { background: #fef2f2; border: 1px solid #fecaca; color: var(--error); font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-top: 1rem; display: none; }
-    .sede-note { font-size: 11px; color: var(--text-sec); margin-top: 4px; display: none; }
-    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 6px; }
+    .error {
+      background: #fef2f2; border: 1px solid #fecaca;
+      color: var(--error); font-size: 13px; padding: 10px 14px;
+      border-radius: 8px; margin-top: 1rem; display: none;
+    }
+    .sede-note { font-size: 11px; color: var(--celeste); margin-top: 4px; display: none; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 6px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .footer-txt {
+      text-align: center; margin-top: 1.25rem;
+      font-size: 11px; color: var(--text-sec);
+    }
   </style>
 </head>
 <body>
+  <!-- Decoración de fondo óptica -->
+  <div class="bg-deco">
+    <div class="lens lens-1"></div>
+    <div class="lens lens-2"></div>
+    <div class="lens lens-3"></div>
+    <div class="dots" id="dotsGrid"></div>
+  </div>
+
   <div class="wrap">
     <div class="logo-area">
-      <div class="logo-icon">💰</div>
-      <h1>GastoControl</h1>
-      <p>Control de gastos empresarial</p>
+      <div class="logo-img-wrap" id="logoWrap">
+        <span class="logo-emoji">👓</span>
+      </div>
+      <h1>Control de gastos</h1>
+      <p>UMI Salud Visual S.A.S.</p>
     </div>
     <div class="card">
+      <div class="card-title">Ingresa con tu cuenta asignada</div>
       <div class="field">
         <label>Correo electrónico</label>
         <input type="email" id="loginEmail" placeholder="correo@empresa.com" autocomplete="email" oninput="onEmailChange()">
@@ -52,12 +147,29 @@
       <div class="field">
         <label>Sede</label>
         <select id="loginSede"><option value="">Cargando sedes...</option></select>
-        <div class="sede-note" id="sedeNote">Como administrador puedes seleccionar cualquier sede</div>
+        <div class="sede-note" id="sedeNote">👁️ Como administrador puedes seleccionar cualquier sede</div>
       </div>
       <button class="btn" id="btnLogin" onclick="doLogin()">Ingresar</button>
       <div class="error" id="loginErr"></div>
     </div>
+    <div class="footer-txt">© 2025 UMI Salud Visual S.A.S. — Todos los derechos reservados</div>
   </div>
+
+  <script>
+    // Generar puntos decorativos
+    const grid = document.getElementById('dotsGrid');
+    for (let i = 0; i < 24; i++) { const d = document.createElement('div'); d.className = 'dot'; grid.appendChild(d); }
+
+    // Intentar cargar logo
+    const logoUrl = 'https://xmwzaukyxtkeatemaoel.supabase.co/storage/v1/object/public/fotos/Logo_UMI_Salud_visual_SAS.jpg';
+    const img = new Image();
+    img.onload = () => {
+      const wrap = document.getElementById('logoWrap');
+      wrap.innerHTML = `<img src="${logoUrl}" class="logo-img" alt="UMI Salud Visual">`;
+    };
+    img.src = logoUrl;
+  </script>
+
   <script type="module">
     import { sb, login } from './js/supabase.js';
     let todasSedes = [];
