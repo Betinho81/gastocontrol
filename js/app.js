@@ -49,6 +49,20 @@ window.showTab = function(name, el) {
 window.gc = window.gc || {};
 window.gc.logout = logout;
 
+// VISOR DE FOTOS
+window.gc.verFoto = function(url) {
+  if (document.getElementById('fotoViewer')) document.getElementById('fotoViewer').remove();
+  const div = document.createElement('div');
+  div.id = 'fotoViewer';
+  div.onclick = () => div.remove();
+  div.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;cursor:pointer;padding:1rem';
+  div.innerHTML = `
+    <div style="position:absolute;top:1rem;right:1.5rem;color:#fff;font-size:32px;font-weight:200;line-height:1">×</div>
+    <img src="${url}" style="max-width:92vw;max-height:86vh;border-radius:12px;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,0.6)">
+    <p style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:1rem;font-family:sans-serif">Toca en cualquier lugar para cerrar</p>`;
+  document.body.appendChild(div);
+};
+
 // ── GASTOS ───────────────────────────────────────────────────
 function renderMetrics() {
   const total = gastos.reduce((s, g) => s + Number(g.valor), 0);
@@ -74,7 +88,7 @@ function renderGastos() {
       <td style="font-size:11px;color:var(--text-sec);font-family:'DM Mono',monospace">${pv.nit || ''}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.descripcion}</td>
       <td style="font-weight:600;font-family:'DM Mono',monospace">$${Number(g.valor).toLocaleString('es-CO')}</td>
-      <td>${g.foto_url ? `<img class="foto-thumb" src="${g.foto_url}" onclick="window.open('${g.foto_url}')">` : '<span style="color:var(--text-ter);font-size:12px">—</span>'}</td>
+      <td>${g.foto_url ? `<img class="foto-thumb" src="${g.foto_url}" onclick="window.gc.verFoto('${g.foto_url}')" title="Ver factura" style="cursor:pointer">` : '<span style="color:var(--text-ter);font-size:12px">—</span>'}</td>
       <td><span class="lock-badge">🔒</span></td>
     </tr>`;
   }).join('');
@@ -199,7 +213,9 @@ window.gc.applyFilters = async function() {
       <td>${pv.nombre_comercial || pv.razon_social || ''}</td><td style="font-family:'DM Mono',monospace;font-size:11px">${pv.nit || ''}</td>
       <td style="font-size:12px">${pv.razon_social || ''}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.descripcion}</td>
-      <td style="font-weight:600;font-family:'DM Mono',monospace">$${Number(g.valor).toLocaleString('es-CO')}</td></tr>`;
+      <td style="font-weight:600;font-family:'DM Mono',monospace">$${Number(g.valor).toLocaleString('es-CO')}</td>
+      <td>${g.foto_url ? `<img src="${g.foto_url}" onclick="window.gc.verFoto('${g.foto_url}')" style="width:32px;height:32px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid #e5e7eb" title="Ver factura">` : '<span style="color:#9ca3af;font-size:12px">—</span>'}</td>
+    </tr>`;
   }).join('') : '<tr><td colspan="9"><div class="empty-state"><p>Sin resultados</p></div></td></tr>';
 };
 window.gc.limpiarFiltros = function() {
