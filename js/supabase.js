@@ -11,14 +11,16 @@ const PASSWORDS = {
   'umipereira@opticasvisionysol.com.co': 'UMI-PEI',
   'comexc@opticasvisionysol.com.co': 'BGA-CENTRO',
   'opticasvisionysolarmenia@gmail.com': 'Palacio-2',
-  'opticasvisionysol.pereira@gmail.com': 'VYS-PEREIRA',
-  'opticasvisionysol.barranquilla@gmail.com': 'BQUILLA',
-  'comint@opticasvisionysol.com.co': 'CABECERA'
+  'opticasvisionysolpereira@gmail.com': 'VYS-PEREIRA',
+  'opticasvisionysolbarranquilla@gmail.com': 'BQUILLA',
+  'comint@opticasvisionysol.com.co': 'CABECERA',
+  'cajamenorarm3@gmail.com': 'Palacio-3',
+  'opticasvisionysol.auxadmon1@gmail.com': 'PAL-PEI',
+  'memohrueda_19@hotmail.com': 'memo123'
 };
 
 export async function login(email, password, sedeId) {
   const emailLower = email.toLowerCase().trim();
-
   const { data: usuario } = await sb
     .from('usuarios')
     .select('*, sedes(nombre)')
