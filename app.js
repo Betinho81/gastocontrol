@@ -121,10 +121,14 @@ function renderWizard() {
       <div class="opt-grid">${filtSubs.map(s => `<button class="opt-btn ${wData.subId === s.id ? 'sel' : ''}" onclick="window.gc.selW('subId','${s.id}','subNombre','${s.nombre}')"><div class="opt-name">${s.nombre}</div></button>`).join('')}</div>`;
   } else if (wStep === 2) {
     const filtProvs = provs.filter(p => !p.categoria_id || p.categorias?.nombre === wData.catNombre);
-    const lista = filtProvs.length ? filtProvs : provs;
-    body.innerHTML = `<p style="font-size:13px;color:var(--text-sec);margin-bottom:1rem">Selecciona el proveedor</p>
-      ${lista.map(p => `<div class="prov-opt ${wData.provId === p.id ? 'sel' : ''}" onclick="window.gc.selProv('${p.id}')">
-        <div class="pn">${p.nombre_comercial || p.razon_social}</div><div class="ps">NIT: ${p.nit} · ${p.razon_social}</div></div>`).join('')}`;
+    const lista = (filtProvs.length ? filtProvs : provs).sort((a,b) => (a.nombre_comercial||a.razon_social).localeCompare(b.nombre_comercial||b.razon_social));
+    const busqId = 'provBusq_' + Date.now();
+    body.innerHTML = `<div style="position:relative;margin-bottom:1rem">
+      <input id="${busqId}" type="text" placeholder="🔍 Buscar proveedor..." oninput="window.gc.filtrarProvs(this.value,'${busqId}_list')"
+        style="width:100%;padding:9px 14px;border:1.5px solid var(--borde);border-radius:var(--radio);font-size:14px;font-family:'DM Sans',sans-serif;outline:none">
+    </div>
+    <div id="${busqId}_list">${lista.map(p => `<div class="prov-opt ${wData.provId === p.id ? 'sel' : ''}" data-nombre="${(p.nombre_comercial||p.razon_social).toLowerCase()}" onclick="window.gc.selProv('${p.id}')">
+        <div class="pn">${p.nombre_comercial || p.razon_social}</div><div class="ps">NIT: ${p.nit} · ${p.razon_social}</div></div>`).join('')}</div>`;
   } else if (wStep === 3) {
     const pv = provs.find(p => p.id === wData.provId) || {};
     body.innerHTML = `
@@ -143,6 +147,14 @@ function renderWizard() {
 }
 window.gc.selW = function(k1, v1, k2, v2) { wData[k1] = v1; wData[k2] = v2; renderWizard(); };
 window.gc.selProv = function(id) { wData.provId = id; renderWizard(); };
+window.gc.filtrarProvs = function(texto, listId) {
+  const items = document.querySelectorAll(`#${listId} .prov-opt`);
+  const q = texto.toLowerCase().trim();
+  items.forEach(item => {
+    const nombre = item.getAttribute('data-nombre') || '';
+    item.style.display = nombre.includes(q) ? '' : 'none';
+  });
+};
 window.gc.handlePhoto = function(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
