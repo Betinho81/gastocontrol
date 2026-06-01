@@ -1,1329 +1,304 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Montana Equipments — Sistema de Gestión</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --v:#1a3a2e;--vm:#2d5c47;--vl:#3d7a60;
-  --d:#c9a227;--dl:#e8c84a;--dp:#f5e9c0;--dpp:#fdf6e3;
-  --be:#e8dcc8;--bd:#d4c5a9;--cr:#faf7f0;
-  --bo:rgba(26,58,46,0.12);--boh:rgba(26,58,46,0.22);
-  --td:#1a1a1a;--tm:#4a4a4a;--tl:#8a8a8a;
-  --white:#ffffff;
-  --sh:0 1px 3px rgba(26,58,46,0.08),0 4px 12px rgba(26,58,46,0.06);
-  --sh2:0 2px 8px rgba(26,58,46,0.12),0 8px 24px rgba(26,58,46,0.08);
-}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cr);color:var(--td);font-size:14px;line-height:1.5;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GastoControl</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --azul: #1A5276; --azul-med: #2E86C1; --azul-clar: #EBF5FB;
+      --verde: #1a7a4a; --verde-clar: #e8f5ee;
+      --text: #1a1a2e; --text-sec: #6b7280; --text-ter: #9ca3af;
+      --borde: #e5e7eb; --bg: #f8fafc; --blanco: #ffffff;
+      --error: #dc2626; --error-bg: #fef2f2;
+      --radio: 10px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    .hidden { display: none !important; }
 
-/* ── LOGIN ── */
-#login-screen{
-  position:fixed;inset:0;background:var(--v);
-  display:flex;align-items:center;justify-content:center;
-  z-index:1000;
-}
-#login-screen.hidden{display:none;}
-.login-card{
-  background:var(--white);border-radius:20px;
-  padding:40px;width:380px;
-  border-top:5px solid var(--d);
-  box-shadow:0 20px 60px rgba(0,0,0,.25);
-}
-.login-logo{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
-.login-circ{
-  width:52px;height:52px;border-radius:50%;
-  border:2px solid var(--d);background:var(--v);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--d);font-size:22px;flex-shrink:0;
-}
-.login-brand{font-size:19px;font-weight:600;color:var(--v);}
-.login-sub{font-size:10px;color:#aaa;letter-spacing:2.5px;text-transform:uppercase;margin-top:1px;}
-.login-label{font-size:11px;font-weight:600;color:var(--v);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:5px;margin-top:14px;}
-.login-input{
-  width:100%;padding:10px 14px;
-  border:1px solid var(--bd);border-radius:9px;
-  font-size:13.5px;background:var(--cr);
-  font-family:'DM Sans',sans-serif;outline:none;color:var(--td);
-  transition:border-color .15s,background .15s;
-}
-.login-input:focus{border-color:var(--d);background:var(--white);}
-.login-btn{
-  width:100%;padding:12px;margin-top:20px;
-  background:var(--v);color:var(--d);
-  border:none;border-radius:9px;
-  font-size:14px;font-weight:600;cursor:pointer;
-  font-family:'DM Sans',sans-serif;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:background .15s;
-}
-.login-btn:hover{background:var(--vm);}
-.login-div{border:none;border-top:1px solid #eee;margin:20px 0 14px;}
-.login-qtit{font-size:10px;color:#bbb;text-align:center;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
-.login-qbtn{
-  width:100%;padding:10px 14px;margin-bottom:7px;
-  border:1px solid var(--bd);border-radius:9px;
-  background:var(--cr);cursor:pointer;
-  font-size:12.5px;color:var(--v);
-  display:flex;align-items:center;gap:10px;
-  font-family:'DM Sans',sans-serif;
-  transition:background .15s,border-color .15s;
-}
-.login-qbtn:hover{background:var(--dp);border-color:var(--d);}
-.login-qbtn b{display:block;font-weight:600;font-size:13px;}
-.login-qbtn span{font-size:11px;color:#999;}
-.login-err{color:#c0392b;font-size:12px;text-align:center;margin-top:8px;display:none;}
+    /* NAV */
+    .topnav { background: var(--blanco); border-bottom: 1px solid var(--borde); height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-logo { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+    .sede-chip { background: var(--azul-clar); color: var(--azul); font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .user-name { font-size: 13px; color: var(--text-sec); }
+    .btn-logout { background: none; border: 1px solid var(--borde); border-radius: 8px; padding: 5px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; color: var(--text-sec); }
+    .btn-logout:hover { background: var(--bg); }
 
-/* ── APP SHELL ── */
-#app{display:flex;flex-direction:column;height:100vh;}
-.topbar{
-  background:var(--v);height:54px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;border-bottom:3px solid var(--d);
-  flex-shrink:0;
-}
-.tb-left{display:flex;align-items:center;gap:12px;}
-.tb-logo{
-  width:34px;height:34px;border-radius:50%;
-  border:2px solid var(--d);background:var(--vm);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--d);font-size:15px;
-}
-.tb-name{font-size:15px;font-weight:600;color:var(--be);}
-.tb-ver{font-size:9px;color:var(--d);letter-spacing:2px;text-transform:uppercase;margin-top:1px;}
-.tb-right{display:flex;align-items:center;gap:8px;}
-.tb-user{
-  display:flex;align-items:center;gap:7px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(201,162,39,.25);
-  border-radius:20px;padding:5px 12px;
-}
-.tb-uname{font-size:12px;color:var(--be);}
-.tb-role{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--d);color:var(--v);}
-.tb-logout{
-  font-size:12px;color:rgba(232,220,200,.5);cursor:pointer;
-  padding:5px 10px;border:1px solid rgba(232,220,200,.18);
-  border-radius:7px;background:transparent;
-  font-family:'DM Sans',sans-serif;
-  display:flex;align-items:center;gap:5px;
-  transition:color .15s;
-}
-.tb-logout:hover{color:var(--d);}
+    /* TABS */
+    .tabs { background: var(--blanco); border-bottom: 1px solid var(--borde); display: flex; padding: 0 1.5rem; gap: 2px; overflow-x: auto; flex-shrink: 0; }
+    .tab { padding: 14px 16px; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-sec); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color .15s; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--azul); border-bottom-color: var(--azul); }
 
-.body-wrap{display:flex;flex:1;overflow:hidden;}
+    /* CONTENT */
+    .content { flex: 1; padding: 1.5rem; overflow-y: auto; max-width: 1200px; width: 100%; margin: 0 auto; }
 
-/* ── SIDEBAR ── */
-.sidebar{width:190px;background:var(--v);padding:12px 0;overflow-y:auto;flex-shrink:0;}
-.sb-section{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,162,39,.5);font-weight:600;padding:0 14px;margin:10px 0 4px;display:block;}
-.sb-item{
-  display:flex;align-items:center;gap:9px;
-  padding:8px 14px;cursor:pointer;
-  color:rgba(232,220,200,.6);font-size:12.5px;
-  border-left:3px solid transparent;
-  transition:all .15s;
-}
-.sb-item:hover{background:rgba(201,162,39,.07);color:var(--be);}
-.sb-item.active{background:rgba(201,162,39,.12);color:var(--d);border-left-color:var(--d);font-weight:500;}
-.sb-item i{font-size:16px;}
-.sb-div{height:1px;background:rgba(201,162,39,.1);margin:6px 12px;}
-.sb-badge{margin-left:auto;background:rgba(201,162,39,.2);color:var(--d);font-size:10px;padding:1px 6px;border-radius:8px;}
+    /* METRIC CARDS */
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .metric-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); padding: 1rem 1.25rem; }
+    .metric-card .m-label { font-size: 11px; color: var(--text-sec); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .metric-card .m-value { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+    .metric-card .m-sub { font-size: 11px; color: var(--text-ter); margin-top: 3px; }
 
-/* ── MAIN ── */
-.main-area{flex:1;overflow-y:auto;padding:20px 22px;background:var(--cr);}
+    /* SECTION HEADER */
+    .sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+    .sec-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .btn-new { background: var(--azul); color: #fff; border: none; border-radius: var(--radio); padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s; }
+    .btn-new:hover { background: #154360; }
+    .btn-outline { background: var(--blanco); color: var(--text); border: 1px solid var(--borde); border-radius: var(--radio); padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .btn-outline:hover { background: var(--bg); }
 
-/* ── KPI CARDS ── */
-.kpi-row{display:grid;gap:12px;margin-bottom:16px;}
-.kpi-4{grid-template-columns:repeat(4,1fr);}
-.kpi-3{grid-template-columns:repeat(3,1fr);}
-.kpi-card{
-  background:var(--white);border:0.5px solid var(--bo);
-  border-radius:12px;padding:14px 16px;
-  position:relative;overflow:hidden;
-  cursor:pointer;
-  box-shadow:var(--sh);
-  transition:transform .15s,box-shadow .15s;
-}
-.kpi-card:hover{transform:translateY(-1px);box-shadow:var(--sh2);}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--d);}
-.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--tl);font-weight:600;margin-bottom:4px;}
-.kpi-val{font-size:22px;font-weight:600;color:var(--v);line-height:1.1;}
-.kpi-sub{font-size:10px;color:var(--tl);margin-top:3px;}
+    /* TABLE */
+    .table-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+    thead { background: var(--bg); }
+    th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+    .b-aseo { background: #dcfce7; color: #166534; }
+    .b-papeleria { background: #dbeafe; color: #1e40af; }
+    .b-cafeteria { background: #fef9c3; color: #854d0e; }
+    .b-seguridad { background: #fee2e2; color: #991b1b; }
+    .b-mantenimiento { background: #ede9fe; color: #4c1d95; }
+    .b-gasolina { background: #ffedd5; color: #9a3412; }
+    .b-servicios { background: #d1fae5; color: #065f46; }
+    .b-insumos { background: #fce7f3; color: #831843; }
+    .b-nominas { background: #f1f5f9; color: #334155; }
+    .foto-thumb { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borde); cursor: pointer; }
+    .lock-badge { font-size: 11px; color: var(--text-ter); display: flex; align-items: center; gap: 3px; }
+    .empty-state { text-align: center; padding: 3rem; color: var(--text-sec); }
+    .empty-state .empty-icon { font-size: 36px; margin-bottom: 0.75rem; }
 
-/* ── PAGE HEADER ── */
-.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;}
-.page-title{font-size:22px;font-weight:600;color:var(--v);}
-.page-sub{font-size:12px;color:var(--tl);margin-top:2px;}
-.page-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+    /* FILTER PANEL */
+    .filter-panel { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .filter-title { font-size: 12px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+    .filter-group label { display: block; font-size: 11px; color: var(--text-sec); margin-bottom: 4px; font-weight: 500; }
+    .filter-group select, .filter-group input { width: 100%; padding: 7px 10px; border: 1px solid var(--borde); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--blanco); outline: none; }
+    .filter-group select:focus, .filter-group input:focus { border-color: var(--azul-med); }
+    .filter-actions { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; }
 
-/* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;}
-.btn-gold{background:var(--d);color:var(--v);}.btn-gold:hover{background:var(--dl);}
-.btn-dark{background:var(--v);color:var(--d);border:1px solid var(--v);}.btn-dark:hover{background:var(--vm);}
-.btn-out{background:transparent;color:var(--v);border:1px solid var(--bo);}.btn-out:hover{background:var(--v);color:var(--d);}
-.btn-danger{background:transparent;color:#c0392b;border:1px solid #c0392b;}.btn-danger:hover{background:#c0392b;color:#fff;}
-.btn-sm{padding:5px 10px;font-size:11.5px;}
-.btn-pdf{background:#e3f2fd;color:#1565c0;border:1px solid #1565c0;}
-.btn-pdf:hover{background:#1565c0;color:#fff;}
-.btn-ok{background:#e8f5e9;color:#2e7d32;border:1px solid #2e7d32;}
-.btn-ok:hover{background:#2e7d32;color:#fff;}
-.btn-reject{background:#fce4ec;color:#c0392b;border:1px solid #c0392b;}
-.btn-reject:hover{background:#c0392b;color:#fff;}
+    /* BAR CHART */
+    .chart-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .chart-title { font-size: 13px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 1rem; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    .bar-label { width: 130px; color: var(--text-sec); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+    .bar-track { flex: 1; background: var(--bg); border-radius: 4px; height: 20px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 10px; color: #fff; font-weight: 600; transition: width .6s ease; }
+    .bar-val { width: 90px; text-align: right; font-weight: 600; font-size: 11px; font-family: 'DM Mono', monospace; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media(max-width:640px) { .charts-row { grid-template-columns: 1fr; } }
 
-/* ── CARD ── */
-.card{background:var(--white);border:0.5px solid var(--bo);border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:var(--sh);}
-.card-head{padding:11px 16px;border-bottom:0.5px solid var(--bo);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.card-title{font-size:13px;font-weight:500;color:var(--v);display:flex;align-items:center;gap:7px;}
-.card-title i{color:var(--d);}
+    /* WIZARD MODAL */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+    .modal { background: var(--blanco); border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .modal-hdr { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--borde); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--blanco); z-index: 1; }
+    .modal-hdr h3 { font-size: 16px; font-weight: 600; }
+    .btn-close { background: none; border: none; cursor: pointer; font-size: 22px; color: var(--text-sec); line-height: 1; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+    .btn-close:hover { background: var(--bg); }
+    .wiz-steps { display: flex; padding: 1rem 1.5rem; border-bottom: 1px solid var(--borde); }
+    .wiz-step { flex: 1; text-align: center; font-size: 11px; color: var(--text-ter); }
+    .wiz-step.active { color: var(--azul); font-weight: 600; }
+    .wiz-step.done { color: var(--verde); }
+    .wiz-num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--borde); display: flex; align-items: center; justify-content: center; margin: 0 auto 4px; font-size: 11px; }
+    .wiz-step.active .wiz-num { background: var(--azul); border-color: var(--azul); color: #fff; }
+    .wiz-step.done .wiz-num { background: var(--verde); border-color: var(--verde); color: #fff; }
+    .modal-body { padding: 1.5rem; }
+    .modal-ftr { padding: 1rem 1.5rem; border-top: 1px solid var(--borde); display: flex; justify-content: space-between; gap: 8px; position: sticky; bottom: 0; background: var(--blanco); }
+    .btn-sec { background: none; border: 1px solid var(--borde); border-radius: var(--radio); padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; color: var(--text); }
+    .btn-sec:hover { background: var(--bg); }
+    .btn-prim { background: var(--azul); color: #fff; border: none; border-radius: var(--radio); padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s; }
+    .btn-prim:hover { background: #154360; }
+    .btn-prim:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── TABLE ── */
-.table-wrap{overflow-x:auto;max-height:400px;overflow-y:auto;}
-table{width:100%;border-collapse:collapse;font-size:12.5px;}
-th{background:var(--v);color:var(--d);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;padding:9px 11px;text-align:left;position:sticky;top:0;white-space:nowrap;z-index:1;}
-td{padding:8px 11px;color:var(--td);border-bottom:0.5px solid rgba(26,58,46,.05);white-space:nowrap;}
-tr:hover td{background:rgba(201,162,39,.03);}
-tr:last-child td{border-bottom:none;}
+    /* OPTION GRID */
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .opt-btn { background: var(--bg); border: 1.5px solid var(--borde); border-radius: var(--radio); padding: 12px; cursor: pointer; text-align: left; transition: border-color .15s, background .15s; }
+    .opt-btn:hover { border-color: var(--azul-med); background: var(--azul-clar); }
+    .opt-btn.sel { border-color: var(--azul); background: var(--azul-clar); }
+    .opt-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .opt-sub { font-size: 11px; color: var(--text-sec); margin-top: 3px; }
+    .prov-opt { background: var(--bg); border: 1.5px solid var(--borde); border-radius: var(--radio); padding: 12px; cursor: pointer; margin-bottom: 8px; transition: border-color .15s; }
+    .prov-opt:hover { border-color: var(--azul-med); }
+    .prov-opt.sel { border-color: var(--azul); background: var(--azul-clar); }
+    .prov-opt .pn { font-weight: 600; font-size: 13px; }
+    .prov-opt .ps { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
 
-/* ── BADGES ── */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;}
-.badge-green{background:#e8f5e9;color:#2e7d32;}
-.badge-yellow{background:#fff8e1;color:#c77700;}
-.badge-blue{background:#e3f2fd;color:#1565c0;}
-.badge-red{background:#fce4ec;color:#c62828;}
-.badge-gray{background:#f0ede6;color:#5a5a5a;}
-.badge-gold{background:var(--dp);color:var(--v);}
-.badge-orange{background:#fff3e0;color:#e65100;}
-
-/* ── FILTER BAR ── */
-.filter-bar{
-  background:var(--white);border:0.5px solid var(--bo);
-  border-radius:10px;padding:10px 14px;
-  margin-bottom:12px;display:flex;align-items:center;
-  gap:8px;flex-wrap:wrap;
-  box-shadow:var(--sh);
-}
-.filter-input{
-  padding:7px 11px;border:0.5px solid var(--bd);
-  border-radius:7px;font-size:12.5px;background:var(--cr);
-  font-family:'DM Sans',sans-serif;outline:none;color:var(--td);
-}
-.filter-input:focus{border-color:var(--d);background:var(--white);}
-
-/* ── MODAL ── */
-.modal-bg{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.5);
-  display:flex;align-items:flex-start;justify-content:center;
-  padding:20px;overflow-y:auto;z-index:500;
-}
-.modal-bg.hidden{display:none;}
-.modal{
-  background:var(--white);border-radius:16px;
-  width:100%;max-width:680px;
-  border-top:4px solid var(--d);
-  margin:auto;
-  box-shadow:0 20px 60px rgba(0,0,0,.2);
-}
-.modal-head{padding:14px 20px 12px;border-bottom:0.5px solid var(--bo);display:flex;justify-content:space-between;align-items:flex-start;}
-.modal-title{font-size:18px;font-weight:500;color:var(--v);}
-.modal-sub{font-size:11px;color:var(--tl);margin-top:2px;}
-.modal-body{padding:18px 20px;max-height:68vh;overflow-y:auto;}
-.modal-foot{padding:12px 20px;border-top:0.5px solid var(--bo);display:flex;justify-content:flex-end;gap:8px;}
-.modal-close{width:30px;height:30px;border-radius:8px;border:0.5px solid var(--bo);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tl);font-size:16px;flex-shrink:0;}
-.modal-close:hover{background:var(--cr);color:var(--v);}
-
-/* ── AUTO STRIP ── */
-.auto-strip{display:flex;border:1px solid var(--vm);border-radius:10px;overflow:hidden;margin-bottom:16px;background:var(--dp);}
-.auto-cell{flex:1;padding:10px 15px;border-right:1px solid rgba(45,92,71,.2);}
-.auto-cell:last-child{border-right:none;}
-.auto-label{font-size:9px;font-weight:600;color:var(--vm);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
-.auto-val{font-size:19px;font-weight:600;color:var(--v);}
-
-/* ── FORM ── */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.form-group{display:flex;flex-direction:column;gap:4px;}
-.form-group.full{grid-column:1/-1;}
-.form-label{font-size:10px;font-weight:600;color:var(--v);text-transform:uppercase;letter-spacing:.5px;}
-.form-input{
-  padding:8px 12px;border:0.5px solid var(--bd);
-  border-radius:8px;font-size:13px;background:var(--cr);
-  font-family:'DM Sans',sans-serif;outline:none;color:var(--td);
-  width:100%;
-}
-.form-input:focus{border-color:var(--d);background:var(--white);}
-.form-textarea{min-height:60px;resize:vertical;}
-
-/* ── COT LINE CARD ── */
-.cot-line{
-  display:flex;align-items:flex-start;gap:10px;
-  padding:10px;background:var(--white);
-  border:0.5px solid var(--bo);border-radius:10px;
-  margin-bottom:7px;
-  box-shadow:var(--sh);
-}
-.cot-foto{
-  width:48px;height:48px;border-radius:8px;
-  background:var(--dp);display:flex;align-items:center;
-  justify-content:center;flex-shrink:0;overflow:hidden;
-}
-.cot-foto img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
-.cot-foto i{font-size:20px;color:var(--vm);}
-.cot-body{flex:1;min-width:0;}
-.cot-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;}
-.cot-sku{font-size:10px;font-weight:600;color:var(--d);background:var(--v);padding:2px 7px;border-radius:8px;}
-.cot-name{font-size:13px;font-weight:500;color:var(--v);}
-.cot-desc{font-size:11px;color:var(--tl);margin-bottom:5px;line-height:1.4;}
-.cot-nums{display:flex;gap:14px;flex-wrap:wrap;}
-.cot-num-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--tl);font-weight:600;}
-.cot-num-val{font-size:12.5px;font-weight:500;color:var(--v);}
-.cot-num-val.gold{color:var(--d);font-size:13.5px;font-weight:600;}
-.cot-del{width:26px;height:26px;border-radius:6px;border:none;background:#fce4ec;color:#c0392b;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center;}
-
-/* ── TOTAL BOX ── */
-.total-box{
-  background:var(--v);border-radius:11px;
-  padding:14px 18px;display:flex;
-  justify-content:space-between;align-items:center;
-  margin-top:10px;
-}
-
-/* ── PRODUCT GRID ── */
-.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.prod-card{background:var(--white);border:0.5px solid var(--bo);border-radius:10px;overflow:hidden;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s;}
-.prod-card:hover{transform:translateY(-1px);box-shadow:var(--sh2);border-color:var(--d);}
-.prod-head{background:var(--v);padding:9px 12px;}
-.prod-name{color:var(--be);font-weight:500;font-size:12.5px;line-height:1.3;}
-.prod-sku{color:var(--d);font-size:10px;margin-top:2px;}
-.prod-body{padding:10px 12px;}
-.prod-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--tm);padding:3px 0;border-bottom:0.5px solid rgba(26,58,46,.05);}
-.prod-row:last-child{border-bottom:none;}
-.prod-row span:last-child{font-weight:500;color:var(--v);}
-
-/* ── TOAST ── */
-.toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
-.toast{
-  background:var(--v);color:var(--be);
-  padding:10px 15px;border-radius:10px;
-  font-size:12.5px;font-family:'DM Sans',sans-serif;
-  border-left:4px solid var(--d);
-  display:flex;align-items:center;gap:8px;
-  min-width:240px;
-  box-shadow:var(--sh2);
-  animation:slideIn .2s ease;
-}
-.toast-success{border-left-color:#27ae60;}
-.toast-error{border-left-color:#c0392b;}
-.toast-warn{border-left-color:#f39c12;}
-@keyframes slideIn{from{transform:translateX(20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-
-/* ── NOTA BOX ── */
-.nota-box{background:#fff8e1;border:0.5px solid #c77700;border-radius:9px;padding:10px 14px;font-size:12px;color:#6d4c00;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;}
-
-/* ── PROD PREVIEW ── */
-#prod-preview{display:none;background:var(--cr);border-radius:9px;padding:10px 13px;margin-bottom:12px;border:0.5px solid var(--bo);align-items:center;gap:10px;}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(26,58,46,.2);border-radius:3px;}
-::-webkit-scrollbar-thumb:hover{background:rgba(26,58,46,.4);}
-</style>
+    /* FORM */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--borde); border-radius: var(--radio);
+      font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--blanco); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--azul-med); box-shadow: 0 0 0 3px rgba(46,134,193,0.1); }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .upload-area { border: 2px dashed var(--borde); border-radius: var(--radio); padding: 1.5rem; text-align: center; cursor: pointer; color: var(--text-sec); font-size: 13px; transition: border-color .15s, color .15s; }
+    .upload-area:hover { border-color: var(--azul-med); color: var(--azul); }
+    .upload-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; margin-top: 10px; border: 1px solid var(--borde); }
+    .info-note { background: var(--azul-clar); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--azul); margin-top: 1rem; display: flex; gap: 8px; align-items: flex-start; }
+    .prov-info-card { background: var(--bg); border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; font-size: 12px; }
+    .prov-info-card strong { font-size: 13px; display: block; margin-bottom: 3px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(26,82,118,0.2); border-top-color: var(--azul); border-radius: 50%; animation: spin .7s linear infinite; margin: 2rem auto; display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { text-align: center; color: var(--text-sec); font-size: 13px; }
+  </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="login-circ"><i class="ti ti-leaf"></i></div>
-      <div>
-        <div class="login-brand">Montana Equipments</div>
-        <div class="login-sub">Sistema de Gestión</div>
-      </div>
-    </div>
-    <div id="login-err" class="login-err">Usuario o contraseña incorrectos</div>
-    <label class="login-label">Usuario</label>
-    <input class="login-input" id="le" type="email" value="jorgehrueda@hotmail.com">
-    <label class="login-label">Contraseña</label>
-    <input class="login-input" id="lp" type="password" value="admin123">
-    <button class="login-btn" id="btn-login"><i class="ti ti-login"></i>Entrar</button>
-    <hr class="login-div">
-    <div class="login-qtit">Acceso rápido</div>
-    <button class="login-qbtn" id="qa"><i class="ti ti-shield-check" style="color:#c9a227;font-size:18px;"></i><div><b>Jorge Rueda · Admin</b><span>jorgehrueda@hotmail.com · admin123</span></div></button>
-    <button class="login-qbtn" id="qb"><i class="ti ti-building-warehouse" style="color:#c9a227;font-size:18px;"></i><div><b>Op. Bodega</b><span>bodega@montana.com · bodega123</span></div></button>
-    <button class="login-qbtn" id="qc"><i class="ti ti-truck" style="color:#c9a227;font-size:18px;"></i><div><b>Proveedor Ally/PIANT</b><span>proveedor@ally.cn · prov123</span></div></button>
+<div class="topnav">
+  <div class="nav-left">
+    <span style="font-size:20px">💰</span>
+    <span class="nav-logo">GastoControl</span>
+    <span class="sede-chip" id="sedeChip"></span>
+  </div>
+  <div class="nav-right">
+    <span class="user-name" id="userName"></span>
+    <button class="btn-logout" onclick="window.gc.logout()">Salir</button>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app" style="display:none;">
-  <div class="topbar">
-    <div class="tb-left">
-      <div class="tb-logo"><i class="ti ti-leaf"></i></div>
-      <div>
-        <div class="tb-name">Montana Equipments</div>
-        <div class="tb-ver">Sistema de Gestión v1.0</div>
-      </div>
-    </div>
-    <div class="tb-right">
-      <div class="tb-user">
-        <i class="ti ti-user" style="font-size:13px;color:#e8dcc8;"></i>
-        <span class="tb-uname" id="tb-uname">—</span>
-        <span class="tb-role" id="tb-role">—</span>
-      </div>
-      <button class="tb-logout" id="btn-logout"><i class="ti ti-logout"></i>Salir</button>
-    </div>
+<div class="tabs">
+  <button class="tab active" id="tabGastos" onclick="showTab('gastos',this)">Mis gastos</button>
+  <button class="tab hidden" id="tabReportes" onclick="showTab('reportes',this)">Reportes</button>
+  <button class="tab hidden" id="tabProveedores" onclick="showTab('proveedores',this)">Proveedores</button>
+  <button class="tab hidden" id="tabAdmin" onclick="showTab('admin',this)">Administrador</button>
+</div>
+
+<!-- GASTOS -->
+<div class="content" id="panelGastos">
+  <div class="sec-header">
+    <span class="sec-title">Registro de gastos</span>
+    <button class="btn-new" onclick="window.gc.openWizard()">+ Nuevo gasto</button>
   </div>
-  <div class="body-wrap">
-    <nav class="sidebar" id="sidebar"></nav>
-    <div class="main-area" id="main-area"></div>
+  <div class="metric-grid" id="metricCards"></div>
+  <div class="table-card">
+    <table><thead><tr>
+      <th>Fecha</th><th>Categoría</th><th>Subcategoría</th><th>Proveedor</th><th>NIT</th><th>Descripción</th><th>Valor</th><th>Foto</th><th></th>
+    </tr></thead><tbody id="gastosTable"></tbody></table>
   </div>
 </div>
 
-<!-- MODAL -->
-<div class="modal-bg hidden" id="modal-bg">
-  <div class="modal" id="modal-box"></div>
+<!-- REPORTES -->
+<div class="content hidden" id="panelReportes">
+  <div class="sec-header">
+    <span class="sec-title">Reportes</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn-outline" onclick="window.gc.exportCSV()">↓ CSV</button>
+      <button class="btn-new" onclick="window.gc.exportExcel()">↓ Excel</button>
+    </div>
+  </div>
+  <div class="filter-panel">
+    <div class="filter-title">Filtros</div>
+    <div class="filter-grid">
+      <div class="filter-group"><label>Sede</label>
+        <select id="fSede" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Categoría</label>
+        <select id="fCat" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Subcategoría</label>
+        <select id="fSub" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Proveedor</label>
+        <select id="fProv" onchange="window.gc.applyFilters()"><option value="">Todos</option></select></div>
+      <div class="filter-group"><label>Desde</label>
+        <input type="date" id="fDesde" onchange="window.gc.applyFilters()"></div>
+      <div class="filter-group"><label>Hasta</label>
+        <input type="date" id="fHasta" onchange="window.gc.applyFilters()"></div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-sec" onclick="window.gc.limpiarFiltros()">Limpiar</button>
+    </div>
+  </div>
+  <div class="metric-grid" id="rMetrics"></div>
+  <div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Por categoría</div><div id="chartCat"></div></div>
+    <div class="chart-card"><div class="chart-title">Por sede</div><div id="chartSede"></div></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Por proveedor (top 5)</div><div id="chartProv"></div></div>
+  <div class="table-card" style="margin-top:1rem">
+    <table><thead><tr>
+      <th>Fecha</th><th>Sede</th><th>Categoría</th><th>Subcategoría</th><th>Proveedor</th><th>NIT</th><th>Razón social</th><th>Descripción</th><th>Valor</th><th>Foto</th>
+    </tr></thead><tbody id="reporteTable"></tbody></table>
+  </div>
 </div>
 
-<!-- TOASTS -->
-<div class="toast-container" id="toasts"></div>
+<!-- PROVEEDORES -->
+<div class="content hidden" id="panelProveedores">
+  <div class="sec-header">
+    <span class="sec-title">Proveedores</span>
+    <button class="btn-new" onclick="window.gc.openProvModal()">+ Nuevo proveedor</button>
+  </div>
+  <div id="provTable"></div>
+</div>
 
-<script>
-// ═══════════════════════════════════════════
-// DATOS Y ESTADO
-// ═══════════════════════════════════════════
-const USERS=[
-  {e:'admin@montana.com',p:'admin123',n:'Administrador',r:'admin'},
-  {e:'jorgehrueda@hotmail.com',p:'admin123',n:'Jorge Rueda',r:'admin'},
-  {e:'proveedor@ally.cn',p:'prov123',n:'Ally/PIANT',r:'proveedor'},
-  {e:'bodega@montana.com',p:'bodega123',n:'Op. Bodega',r:'bodega'},
-];
+<!-- ADMIN -->
+<div class="content hidden" id="panelAdmin">
+  <div class="sec-header"><span class="sec-title">Administrador</span></div>
+  <div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Usuarios</div><div id="adminUsers"></div></div>
+    <div class="chart-card"><div class="chart-title">Sedes</div><div id="adminSedes"></div></div>
+  </div>
+  <div class="chart-card" style="margin-bottom:1rem"><div class="chart-title">Categorías y subcategorías</div><div id="adminCats"></div></div>
+  <div class="chart-card"><div class="chart-title">Gastos por categoría (global)</div><div id="adminChart"></div></div>
+</div>
 
-const D027=[
-  {sku:"036",p:"MOTOBOMBAS 2X2",d:"MOTOBOMBA 2 X 2",qty:24,u:"PCS",rmb:550,fob:13200},
-  {sku:"044",p:"ACOPLES RAPIDA 2.5 a 2 Pulg",d:"Acople succion y distribucion motobomba",qty:24,u:"PCS",rmb:26,fob:624},
-  {sku:"044",p:"ACOPLES RAPIDA 2 a 1.5 Pulg",d:"Acople succion y distribucion motobomba",qty:24,u:"PCS",rmb:22,fob:528},
-  {sku:"036",p:"MOTOBOMBAS 2X2",d:"MOTOBOMBA 2 X 2",qty:30,u:"PCS",rmb:550,fob:16500},
-  {sku:"044",p:"ACOPLES RAPIDA 2.5 a 2 Pulg",d:"Acople succion y distribucion motobomba",qty:30,u:"PCS",rmb:26,fob:780},
-  {sku:"044",p:"ACOPLES RAPIDA 2 a 1.5 Pulg",d:"Acople succion y distribucion motobomba",qty:30,u:"PCS",rmb:22,fob:660},
-  {sku:"036",p:"MOTOBOMBAS 2X2",d:"MOTOBOMBA 2 X 2",qty:24,u:"PCS",rmb:550,fob:13200},
-  {sku:"044",p:"ACOPLES RAPIDA 2.5 a 2 Pulg",d:"Acople succion y distribucion motobomba",qty:24,u:"PCS",rmb:26,fob:624},
-  {sku:"044",p:"ACOPLES RAPIDA 2 a 1.5 Pulg",d:"Acople succion y distribucion motobomba",qty:24,u:"PCS",rmb:22,fob:528},
-  {sku:"036",p:"MOTOBOMBAS 2X2",d:"MOTOBOMBA 2 X 2",qty:792,u:"PCS",rmb:550,fob:435600},
-  {sku:"044",p:"ACOPLES RAPIDA 2.5 a 2 Pulg",d:"Acople succion y distribucion motobomba",qty:792,u:"PCS",rmb:26,fob:20592},
-  {sku:"044",p:"ACOPLES RAPIDA 2 a 1.5 Pulg",d:"Acople succion y distribucion motobomba",qty:792,u:"PCS",rmb:22,fob:17424},
-  {sku:"043",p:"TANQUE DE ALMACENAMIENTO",d:"20.000 LT",qty:166,u:"PCS",rmb:1155,fob:191730},
-  {sku:"043",p:"TANQUE DE ALMACENAMIENTO",d:"20.000 LT",qty:166,u:"PCS",rmb:1155,fob:191730},
-  {sku:"043",p:"TANQUE DE ALMACENAMIENTO",d:"20.000 LT",qty:166,u:"PCS",rmb:1155,fob:191730},
-  {sku:"043",p:"TANQUE DE ALMACENAMIENTO",d:"20.000 LT",qty:166,u:"PCS",rmb:1155,fob:191730},
-  {sku:"043",p:"TANQUE DE ALMACENAMIENTO",d:"20.000 LT",qty:166,u:"PCS",rmb:1155,fob:191730},
-  {sku:"045",p:"Manguera PVC Plana 1.5\" pulgada",d:"MANGUERA BLANDA 50 MTS",qty:1760,u:"PCS",rmb:87,fob:153120},
-  {sku:"055",p:"Manguera PVC Plana 1 pulgada",d:"Manguera Blanda PVC 100 mts",qty:600,u:"PCS",rmb:128,fob:76800},
-  {sku:"046",p:"Manguera Rigida de succion",d:"MANGUERA DE SUCCION DE 50 METROS",qty:88,u:"PCS",rmb:362,fob:31856},
-  {sku:"050",p:"ACOPLES MANGUERAS BLANDAS 2 PULG",d:"ACOPLE DE UNION MANGUERAS 50 MTS",qty:880,u:"PCS",rmb:1.8,fob:1584},
-  {sku:"051",p:"ASPERSORES DE RIEGO",d:"ASPERSORES DE RIEGO",qty:5280,u:"PCS",rmb:3.65,fob:19272},
-  {sku:"052",p:"ABRAZADERAS 1 PULGADA",d:"1 INCH (18-32MM) X 2",qty:1800,u:"PCS",rmb:0.65,fob:1170},
-  {sku:"053",p:"ABRAZADERAS 1.5 PULGADAS",d:"1.5 INCH (21-44MM) X 4",qty:3600,u:"PCS",rmb:0.67,fob:2412},
-  {sku:"054",p:"ABRAZADERAS 2 PULGADAS",d:"2 INCH (38-57) X 2",qty:1800,u:"PCS",rmb:0.68,fob:1224},
-  {sku:"036",p:"MOTOBOMBAS 2X2",d:"MOTOBOMBA 2 X 2",qty:10,u:"PCS",rmb:550,fob:5500},
-  {sku:"044",p:"ACOPLES RAPIDA 2.5 a 2 Pulg",d:"Acople succion y distribucion motobomba",qty:10,u:"PCS",rmb:26,fob:260},
-  {sku:"044",p:"ACOPLES RAPIDA 2 a 1.5 Pulg",d:"Acople succion y distribucion motobomba",qty:10,u:"PCS",rmb:22,fob:220},
-  {sku:"055",p:"Manguera PVC Plana 1 pulgada",d:"Manguera Blanda PVC 100 mts",qty:1160,u:"PCS",rmb:128,fob:148480},
-  {sku:"043",p:"TANQUE DE ALMACENAMIENTO",d:"20.000 LT",qty:50,u:"PCS",rmb:1155,fob:57750},
-];
-
-const OCS_INIT=[
-  {id:1,oc:'001/2023',fv:'F01',ano:'2023',fecha:'2023-08-25',estado:'Completada',totalFob:365680,totalUsd:66647,lineas:2,cliente:'',notas:'',detalle:[{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":400.0,"u":"SET","rmb":760.0,"fob":304000.0},{"sku":"002","p":"ESTIBAS PLASTICAS","d":"black","qty":1285.0,"u":"PCS","rmb":48.0,"fob":61680.0}]},
-  {id:2,oc:'002/2023',fv:'F03',ano:'2023',fecha:'2023-11-15',estado:'Completada',totalFob:1428772,totalUsd:274898,lineas:25,cliente:'',notas:'',detalle:[{"sku":"003","p":"NEVERA PLASTICA -","d":"blue/white","qty":350.0,"u":"PCS","rmb":350.0,"fob":123500.0},{"sku":"003","p":"NEVERA PLASTICA -","d":"blue/white","qty":350.0,"u":"PCS","rmb":350.0,"fob":123500.0},{"sku":"002","p":"ESTIBAS PLASTICAS","d":"black","qty":1285.0,"u":"PCS","rmb":47.5,"fob":61037.5},{"sku":"002","p":"ESTIBAS PLASTICAS","d":"black","qty":1285.0,"u":"PCS","rmb":47.5,"fob":61037.5},{"sku":"002","p":"ESTIBAS PLASTICAS","d":"black","qty":1285.0,"u":"PCS","rmb":47.5,"fob":61037.5},{"sku":"002","p":"ESTIBAS PLASTICAS","d":"black","qty":1285.0,"u":"PCS","rmb":47.5,"fob":61037.5},{"sku":"035","p":"bebedero de gallinas","d":"drinker","qty":8000.0,"u":"PCS","rmb":6.8,"fob":55200.0},{"sku":"034","p":"Comedero de gallinas","d":"Feeder","qty":8000.0,"u":"PCS","rmb":5.6,"fob":45600.0},{"sku":"012","p":"Mesas plasticas","d":"","qty":500.0,"u":"PCS","rmb":32.0,"fob":16000.0},{"sku":"025","p":"TIJERA FLORICULTURA","d":"","qty":700.0,"u":"PCS","rmb":10.7,"fob":7490.0},{"sku":"014","p":"Balanza digital gramera electrica -bateria","d":"","qty":400.0,"u":"PCS","rmb":13.0,"fob":5200.0},{"sku":"007.2","p":"PALA ANTICHISPAS O ANTIDERRAMES PLASTICA","d":"","qty":3768.0,"u":"PCS","rmb":24.0,"fob":90432.0},{"sku":"024","p":"Caneca- tapa plastica de 60 litros para biopreparados","d":"white\nstocks","qty":300.0,"u":"PCS","rmb":29.0,"fob":8700.0},{"sku":"010","p":"CAJA DE BOTIQUIN","d":"","qty":3600.0,"u":"PCS","rmb":43.0,"fob":154800.0},{"sku":"013","p":"Punto ecologico con base de 55 LT","d":"black","qty":400.0,"u":"PCS","rmb":31.0,"fob":12400.0},{"sku":"015","p":"teja de zinc","d":"","qty":9575.5,"u":"PCS","rmb":14.0,"fob":134057.0},{"sku":"013","p":"Punto ecologico con base de 55 LT","d":"green/white","qty":800.0,"u":"PCS","rmb":33.0,"fob":26400.0},{"sku":"015","p":"teja de zinc","d":"","qty":9575.5,"u":"PCS","rmb":14.0,"fob":134057.0},{"sku":"006","p":"CARRETA TIPO BOUGUI","d":"","qty":1000.0,"u":"PCS","rmb":160.0,"fob":160000.0},{"sku":"016","p":"machete barrigon","d":"","qty":1008.0,"u":"PCS","rmb":6.8,"fob":6854.4},{"sku":"017","p":"machete 3 lineas","d":"","qty":1008.0,"u":"PCS","rmb":6.5,"fob":6552.0},{"sku":"032","p":"Zorra carretilla de mano","d":"","qty":400.0,"u":"PCS","rmb":98.0,"fob":39200.0},{"sku":"023","p":"Caneca- tapa plastica de 200 litros para biopreparados","d":"","qty":700.0,"u":"PCS","rmb":48.0,"fob":33600.0},{"sku":"022","p":"Beaker Plastico 250 ml","d":"100ML","qty":400.0,"u":"PCS","rmb":1.7,"fob":680.0},{"sku":"021","p":"Probeta plastica alta resistencia 100 ml","d":"250ML","qty":500.0,"u":"PCS","rmb":0.8,"fob":400.0}]},
-  {id:3,oc:'003/2023',fv:'F11',ano:'2023',fecha:'2023-11-15',estado:'Completada',totalFob:1401588,totalUsd:250032,lineas:7,cliente:'',notas:'',detalle:[{"sku":"015","p":"teja de zinc","d":"Zinc Roof","qty":6275.0,"u":"PCS","rmb":14.0,"fob":87850.0},{"sku":"035","p":"bebedero de gallinas","d":"drinker","qty":2500.0,"u":"PCS","rmb":6.8,"fob":17500.0},{"sku":"015","p":"teja de zinc","d":"Zinc Roof","qty":6190.0,"u":"PCS","rmb":14.0,"fob":86660.0},{"sku":"034","p":"Comedero de gallinas","d":"Feeder","qty":2550.0,"u":"PCS","rmb":5.6,"fob":14780.0},{"sku":"002","p":"ESTIBAS PLASTICAS","d":"black","qty":1285.0,"u":"PCS","rmb":47.5,"fob":61037.5},{"sku":"038","p":"Guadañadora de gasolina","d":"black/Green","qty":1700.0,"u":"PCS","rmb":420.0,"fob":714000.0},{"sku":"036","p":"Motobomba de presion","d":"Green","qty":792.0,"u":"PCS","rmb":530.0,"fob":419760.0}]},
-  {id:4,oc:'004/2023',fv:'F14',ano:'2023',fecha:'2023-12-01',estado:'Completada',totalFob:2520336,totalUsd:439302,lineas:15,cliente:'',notas:'',detalle:[{"sku":"036","p":"Motobomba de presion","d":"verde","qty":660.0,"u":"PCS","rmb":530.0,"fob":349800.0},{"sku":"036*","p":"Motobomba de presion","d":"design","qty":660.0,"u":"pcs","rmb":17.0,"fob":11220.0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":480.0,"u":"pcs","rmb":23.0,"fob":11040.0},{"sku":"036","p":"Motobomba de presion","d":"verde","qty":659.0,"u":"PCS","rmb":530.0,"fob":349270.0},{"sku":"036*","p":"Motobomba de presion","d":"design","qty":659.0,"u":"pcs","rmb":17.0,"fob":11203.0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":480.0,"u":"pcs","rmb":23.0,"fob":11040.0},{"sku":"038","p":"Guadañadora de gasolina","d":"","qty":1700.0,"u":"PCS","rmb":420.0,"fob":714000.0},{"sku":"038","p":"Guadañadora de gasolina","d":"","qty":1700.0,"u":"PCS","rmb":420.0,"fob":714000.0},{"sku":"038","p":"Guadañadora de gasolina","d":"cutters plus  empty boxes","qty":116.0,"u":"PCS","rmb":420.0,"fob":48720.0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":116.0,"u":"pcs","rmb":23.0,"fob":2668.0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":824.0,"u":"pcs","rmb":23.0,"fob":18952.0},{"sku":"036","p":"Motobomba de presion","d":"verde","qty":509.0,"u":"PCS","rmb":530.0,"fob":269770.0},{"sku":"036*","p":"Motobomba de presion","d":"design","qty":509.0,"u":"pcs","rmb":17.0,"fob":8653.0},{"sku":"036*","p":"Motobomba de presion","d":"design","qty":0,"u":"pcs","rmb":17.0,"fob":0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":0,"u":"pcs","rmb":23.0,"fob":0}]},
-  {id:5,oc:'005/2023',fv:'F18',ano:'2023',fecha:'2024-01-10',estado:'Stand By',totalFob:1301807,totalUsd:236613,lineas:18,cliente:'',notas:'',detalle:[{"sku":"012","p":"Mesas plasticas","d":"","qty":160.0,"u":"PCS","rmb":32.0,"fob":5120.0},{"sku":"024","p":"Caneca- tapa plastica de 60 litros para biopreparados","d":"","qty":1300.0,"u":"PCS","rmb":29.0,"fob":37700.0},{"sku":"013","p":"Punto ecologico con base de 55 LT","d":"green/white","qty":510.0,"u":"PCS","rmb":31.0,"fob":15810.0},{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":160.0,"u":"SET","rmb":760.0,"fob":121600.0},{"sku":"010","p":"CAJA DE BOTIQUIN","d":"","qty":408.0,"u":"PCS","rmb":43.0,"fob":17544.0},{"sku":"010","p":"CAJA DE BOTIQUIN","d":"","qty":184.0,"u":"PCS","rmb":50.0,"fob":9200.0},{"sku":"022","p":"Beaker Plastico 250 ml","d":"100ML","qty":300.0,"u":"PCS","rmb":1.7,"fob":510.0},{"sku":"021","p":"Probeta plastica alta resistencia 100 ml","d":"250ML","qty":300.0,"u":"PCS","rmb":0.8,"fob":240.0},{"sku":"014","p":"Balanza digital gramera electrica -bateria","d":"","qty":180.0,"u":"PCS","rmb":13.0,"fob":2340.0},{"sku":"007.2","p":"PALA ANTICHISPAS O ANTIDERRAMES PLASTICA","d":"","qty":180.0,"u":"PCS","rmb":29.0,"fob":5220.0},{"sku":"032","p":"Zorra carretilla de mano","d":"","qty":160.0,"u":"PCS","rmb":98.0,"fob":15680.0},{"sku":"NA","p":"SAMPLES 2","d":"","qty":38342.7,"u":"PCS","rmb":1.0,"fob":38342.7},{"sku":"038","p":"Guadañadora de gasolina","d":"","qty":1380.0,"u":"PCS","rmb":420.0,"fob":579600.0},{"sku":"036","p":"Motobomba de presion","d":"verde","qty":730.0,"u":"PCS","rmb":530.0,"fob":386900.0},{"sku":"036*","p":"Motobomba de presion","d":"design","qty":730.0,"u":"pcs","rmb":17.0,"fob":12410.0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":610.0,"u":"pcs","rmb":23.0,"fob":14030.0},{"sku":"036*","p":"Motobomba de presion","d":"design","qty":1250.0,"u":"pcs","rmb":0,"fob":0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":1720.0,"u":"pcs","rmb":23.0,"fob":39560.0}]},
-  {id:6,oc:'006/2023',fv:'F22',ano:'2024',fecha:'2024-03-01',estado:'Stand By',totalFob:598533,totalUsd:110777,lineas:10,cliente:'',notas:'',detalle:[{"sku":"038","p":"Guadañadora de gasolina","d":"","qty":349.0,"u":"PCS","rmb":420.0,"fob":146580.0},{"sku":"038","p":"Guadañadora de gasolina","d":"cutters plus  empty boxes","qty":11.0,"u":"PCS","rmb":0,"fob":0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":360.0,"u":"pcs","rmb":23.0,"fob":8280.0},{"sku":"036","p":"Motobomba de presion","d":"verde","qty":329.0,"u":"PCS","rmb":530.0,"fob":174370.0},{"sku":"036*","p":"Motobomba de presion","d":"design","qty":329.0,"u":"pcs","rmb":17.0,"fob":5593.0},{"sku":"038*","p":"Guadañadora de gasolina","d":"design","qty":1540.0,"u":"pcs","rmb":23.0,"fob":35420.0},{"sku":"015","p":"teja de zinc","d":"","qty":2555.0,"u":"PCS","rmb":14.0,"fob":35770.0},{"sku":"035","p":"bebedero de gallinas","d":"drinker","qty":3400.0,"u":"PCS","rmb":6.8,"fob":23120.0},{"sku":"015","p":"teja de zinc","d":"","qty":10720.0,"u":"PCS","rmb":14.0,"fob":150080.0},{"sku":"034","p":"Comedero de gallinas","d":"Feeder","qty":3450.0,"u":"PCS","rmb":5.6,"fob":19320.0}]},
-  {id:7,oc:'007/2023',fv:'F18',ano:'2023',fecha:'2024-01-10',estado:'Stand By',totalFob:15260,totalUsd:2543,lineas:1,cliente:'',notas:'',detalle:[{"sku":"SAM","p":"SAMPLES 1","d":"","qty":1.0,"u":"SET","rmb":15260.0,"fob":15260.0}]},
-  {id:8,oc:'009/2024',fv:'F24',ano:'2024',fecha:'2024-04-01',estado:'Completada',totalFob:1983180,totalUsd:376049,lineas:9,cliente:'',notas:'',detalle:[{"sku":"005,1","p":"BALANZA ELECTRONICA","d":"BALANZA DE 200 KG","qty":2100.0,"u":"PCS","rmb":128.0,"fob":268800.0},{"sku":"013","p":"PUNTOS ECOLOGICOS X 3 COLORES","d":"green/white/GRAY","qty":3600.0,"u":"PCS","rmb":32.33,"fob":116400.0},{"sku":"013","p":"PUNTOS ECOLOGICOS X 3 COLORES","d":"green/white/GRAY","qty":3600.0,"u":"PCS","rmb":32.33,"fob":116400.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":450.0,"fob":338400.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":450.0,"fob":338400.0},{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":387.0,"u":"SET","rmb":760.0,"fob":294120.0},{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":384.0,"u":"SET","rmb":760.0,"fob":291840.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":162.0,"u":"PCS","rmb":450.0,"fob":72900.0},{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":192.0,"u":"SET","rmb":760.0,"fob":145920.0}]},
-  {id:9,oc:'010/2024',fv:'F27',ano:'2024',fecha:'2024-05-15',estado:'Completada',totalFob:4379582,totalUsd:833617,lineas:33,cliente:'',notas:'',detalle:[{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":137.0,"u":"PCS","rmb":1100.0,"fob":150700.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":150.0,"u":"PCS","rmb":1100.0,"fob":165000.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":150.0,"u":"PCS","rmb":1100.0,"fob":165000.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":150.0,"u":"PCS","rmb":1100.0,"fob":165000.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":150.0,"u":"PCS","rmb":1100.0,"fob":165000.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":156.0,"u":"PCS","rmb":1100.0,"fob":171600.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":156.0,"u":"PCS","rmb":1100.0,"fob":171600.0},{"sku":"043","p":"TANQUE DE ALMACENAMIENTO","d":"20.000 LT","qty":158.0,"u":"PCS","rmb":1100.0,"fob":173800.0},{"sku":"036","p":"MOTOBOMBAS","d":"MOTOBOMBA 2 X 2","qty":770.0,"u":"PCS","rmb":520.0,"fob":400400.0},{"sku":"044","p":"ACOPLES RAPIDA 2,5 a 2 Pulg","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":800.0,"u":"PCS","rmb":24.0,"fob":19200.0},{"sku":"044","p":"ACOPLES RAPIDA 2 a 1,5 Pulg","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":800.0,"u":"PCS","rmb":20.0,"fob":16000.0},{"sku":"036","p":"MOTOBOMBAS","d":"MOTOBOMBA 2 X 2","qty":770.0,"u":"PCS","rmb":520.0,"fob":400400.0},{"sku":"044","p":"ACOPLES RAPIDA 2,5 a 2 Pulg","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":800.0,"u":"PCS","rmb":24.0,"fob":19200.0},{"sku":"044","p":"ACOPLES RAPIDA 2 a 1,5 Pulg","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":800.0,"u":"PCS","rmb":20.0,"fob":16000.0},{"sku":"036","p":"MOTOBOMBAS","d":"MOTOBOMBA 2 X 2","qty":760.0,"u":"PCS","rmb":520.0,"fob":395200.0},{"sku":"044","p":"ACOPLES RAPIDA 2,5 a 2 Pulg","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":700.0,"u":"PCS","rmb":24.0,"fob":16800.0},{"sku":"044","p":"ACOPLES RAPIDA 2 a 1,5 Pulg","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":700.0,"u":"PCS","rmb":20.0,"fob":14000.0},{"sku":"045","p":"MANGUERA DE DISTRIBUCION","d":"MANGUERA BLANDA       50 MTS","qty":2450.0,"u":"PCS","rmb":84.5,"fob":207025.0},{"sku":"046","p":"MANGUERA DE SUCCION","d":"MANGUERA DE SUCCION DE 50 METROS","qty":130.0,"u":"PCS","rmb":360.0,"fob":46800.0},{"sku":"045","p":"MANGUERA DE DISTRIBUCION","d":"MANGUERA BLANDA       50 MTS","qty":2150.0,"u":"PCS","rmb":84.5,"fob":181675.0},{"sku":"046","p":"MANGUERA DE SUCCION","d":"MANGUERA DE SUCCION DE 50 METROS","qty":100.0,"u":"PCS","rmb":360.0,"fob":36000.0},{"sku":"050","p":"ACOPLES DE MANGUERAS BLANDAS DE 2 PULG","d":"ACOPLE DE UNION DE LAS MANGUERAS DE 50 MTS","qty":5000.0,"u":"PCS","rmb":1.2,"fob":6000.0},{"sku":"051","p":"ASPERSORES","d":"ASPERSORES DE RIEGO","qty":13800.0,"u":"PCS","rmb":3.5,"fob":48300.0},{"sku":"052","p":"ABRAZADERAS","d":"1 INCH (18-32MM) X 2","qty":4600.0,"u":"PCS","rmb":0.65,"fob":2990.0},{"sku":"053","p":"ABRAZADERAS","d":"1.5 INCH (21-44MM)  X  4","qty":9200.0,"u":"PCS","rmb":0.67,"fob":6164.0},{"sku":"054","p":"ABRAZADERAS","d":"2 INCH (38-57)  X   2","qty":4600.0,"u":"PCS","rmb":0.68,"fob":3128.0}]},
-  {id:10,oc:'011/2024',fv:'F34',ano:'2024',fecha:'2024-08-01',estado:'Completada',totalFob:772830,totalUsd:147670,lineas:6,cliente:'',notas:'',detalle:[{"sku":"015","p":"Zinc roof","d":"same as first order","qty":7514.0,"u":"PCS","rmb":15.0,"fob":112710.0},{"sku":"049","p":"Zinc Roof, special color 2100 square meters.","d":"aily the idea for this,  the longest size the boss says is good 4 mt, and 1 meter widht, and 0,3 thickness","qty":590.0,"u":"PCS","rmb":68.5,"fob":40415.0},{"sku":"008,2","p":"Fumigadora Espalda Dual Electrica_Manual","d":"green/white/GRAY with new box, 20 lt","qty":1380.0,"u":"PCS","rmb":197.0,"fob":271860.0},{"sku":"008,2","p":"Fumigadora Espalda Dual Electrica_Manual","d":"green/white/GRAY with new box, 20 lt","qty":1380.0,"u":"PCS","rmb":197.0,"fob":271860.0},{"sku":"008,2","p":"Fumigadora Espalda Dual Electrica_Manual","d":"green/white/GRAY with new box, 20 lt","qty":40.0,"u":"PCS","rmb":197.0,"fob":7880.0},{"sku":"002","p":"PLASTIC PALLETS","d":"black.   Aily this time quote better quality, the boss wants to improve the quality to many broken","qty":1285.0,"u":"PCS","rmb":53.0,"fob":68105.0}]},
-  {id:11,oc:'012/2024',fv:'F37',ano:'2024',fecha:'2024-10-01',estado:'Completada',totalFob:374900,totalUsd:67065,lineas:3,cliente:'',notas:'',detalle:[{"sku":"038","p":"Guadañadora de gasolina","d":"","qty":230.0,"u":"PCS","rmb":420.0,"fob":96600.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":230.0,"u":"PCS","rmb":450.0,"fob":103500.0},{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":230.0,"u":"SET","rmb":760.0,"fob":174800.0}]},
-  {id:12,oc:'013/2025',fv:'F38',ano:'2024',fecha:'2024-07-25',estado:'Stand By',totalFob:706880,totalUsd:125315,lineas:2,cliente:'',notas:'',detalle:[{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":470.0,"fob":353440.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":470.0,"fob":353440.0}]},
-  {id:13,oc:'014/2025',fv:'F39',ano:'2025',fecha:'2025-01-15',estado:'Stand By',totalFob:156600,totalUsd:28699,lineas:12,cliente:'',notas:'',detalle:[{"sku":"043","p":"Tanque de Zinc 20.000 Lt","d":"20.000 LT","qty":80.0,"u":"PCS","rmb":1100.0,"fob":88000.0},{"sku":"058","p":"Geomembrana para tanque","d":"solo canvas","qty":16.0,"u":"PCS","rmb":290.0,"fob":4640.0},{"sku":"036","p":"Motobomba de presion","d":"MOTOBOMBA 2 X 2","qty":80.0,"u":"PCS","rmb":520.0,"fob":41600.0},{"sku":"044","p":"Acoples Rapidos","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":80.0,"u":"PCS","rmb":25.0,"fob":2000.0},{"sku":"044","p":"Acoples Rapidos","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":80.0,"u":"PCS","rmb":21.0,"fob":1680.0},{"sku":"045","p":"Manguera PVC Plana de 1,5 \" pulgada","d":"MANGUERA BLANDA       50 MTS","qty":160.0,"u":"PCS","rmb":84.5,"fob":13520.0},{"sku":"046","p":"Manguera Rigida","d":"MANGUERA DE SUCCION DE 50 METROS","qty":8.0,"u":"PCS","rmb":360.0,"fob":2880.0},{"sku":"050","p":"ACOPLES DE MANGUERAS BLANDAS DE 2 PULG","d":"ACOPLE DE UNION DE LAS MANGUERAS DE 50 MTS","qty":80.0,"u":"PCS","rmb":1.5,"fob":120.0},{"sku":"051","p":"ASPERSORES","d":"ASPERSORES DE RIEGO","qty":480.0,"u":"PCS","rmb":4.0,"fob":1920.0},{"sku":"052","p":"ABRAZADERAS 1 PULGADA","d":"1 INCH (18-32MM) X 2","qty":80.0,"u":"PCS","rmb":1.0,"fob":80.0},{"sku":"053","p":"ABRAZADERAS 1,5 PULGADAS","d":"1.5 INCH (21-44MM)  X  4","qty":80.0,"u":"PCS","rmb":1.0,"fob":80.0},{"sku":"054","p":"ABRAZADERAS 2 PULGADAS","d":"2 INCH (38-57)  X   2","qty":80.0,"u":"PCS","rmb":1.0,"fob":80.0}]},
-  {id:14,oc:'015/2025',fv:'F41',ano:'2025',fecha:'2025-03-01',estado:'Stand By',totalFob:388170,totalUsd:69705,lineas:13,cliente:'',notas:'',detalle:[{"sku":"043","p":"Tanque de Zinc 20.000 Lt","d":"Tanques completos","qty":180.0,"u":"PCS","rmb":1100.0,"fob":198000.0},{"sku":"043","p":"Tanque de Zinc 20.000 Lt","d":"solo canvas","qty":0,"u":"PCS","rmb":290.0,"fob":0},{"sku":"036","p":"Motobomba de presion","d":"MOTOBOMBA 2 X 2","qty":180.0,"u":"PCS","rmb":520.0,"fob":93600.0},{"sku":"044","p":"Acoples Rapidos","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":180.0,"u":"PCS","rmb":25.0,"fob":4500.0},{"sku":"044","p":"Acoples Rapidos","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":180.0,"u":"PCS","rmb":21.0,"fob":3780.0},{"sku":"045","p":"Manguera PVC Plana de 1,5 \" pulgada","d":"MANGUERA BLANDA       50 MTS","qty":360.0,"u":"PCS","rmb":84.5,"fob":30420.0},{"sku":"055","p":"Manguera PVC Plana de 1 pulgada","d":"Manguera Blanda PVC 100 mts","qty":360.0,"u":"PCS","rmb":126.0,"fob":45360.0},{"sku":"046","p":"Manguera Rigida","d":"MANGUERA DE SUCCION DE 50 METROS","qty":18.0,"u":"PCS","rmb":360.0,"fob":6480.0},{"sku":"050","p":"ACOPLES DE MANGUERAS BLANDAS DE 2 PULG","d":"ACOPLE DE UNION DE LAS MANGUERAS DE 50 MTS","qty":180.0,"u":"PCS","rmb":1.5,"fob":270.0},{"sku":"051","p":"ASPERSORES","d":"ASPERSORES DE RIEGO","qty":1080.0,"u":"PCS","rmb":4.0,"fob":4320.0},{"sku":"052","p":"ABRAZADERAS 1 PULGADA","d":"1 INCH (18-32MM) X 2","qty":360.0,"u":"PCS","rmb":1.0,"fob":360.0},{"sku":"053","p":"ABRAZADERAS 1,5 PULGADAS","d":"1.5 INCH (21-44MM)  X  4","qty":720.0,"u":"PCS","rmb":1.0,"fob":720.0},{"sku":"054","p":"ABRAZADERAS 2 PULGADAS","d":"2 INCH (38-57)  X   2","qty":360.0,"u":"PCS","rmb":1.0,"fob":360.0}]},
-  {id:15,oc:'016/2025',fv:'F40',ano:'2025',fecha:'2025-04-01',estado:'Stand By',totalFob:50000,totalUsd:11229,lineas:2,cliente:'',notas:'',detalle:[{"sku":"043","p":"Tanque de Zinc 20.000 Lt","d":"20.000 LT. ONLY metal zinc x 10 pieces and 7 pieces","qty":180.0,"u":"PCS","rmb":277.78,"fob":50000.0},{"sku":"057","p":"Plastic foot valve","d":"Granada filtro de manguera","qty":2300.0,"u":"PCS","rmb":0,"fob":0}]},
-  {id:16,oc:'017/2025',fv:'F42',ano:'2024',fecha:'2024-07-25',estado:'Stand By',totalFob:957130,totalUsd:191204,lineas:12,
-   cliente:'Soluciones y Suministros Agricolas S.A.S',
-   notas:'AILY: facturar bajo GZ PIANT OPTICS CO.,LTD. Set de riego 500 unidades.',
-   detalle:[
-    {sku:'043',p:'Tanque de almacenamiento 20.000 LT',d:'20.000 LT',qty:500,u:'PCS',rmb:1100,fob:550000},
-    {sku:'036',p:'Motobomba de presion MOTOBOMBA 2X2',d:'MOTOBOMBA 2 X 2',qty:500,u:'PCS',rmb:520,fob:260000},
-    {sku:'044',p:'Acople Rapido 2.5a2 outlet succion',d:'ACOPLE RAPIDO SUCCION Y DISTRIBUCION',qty:500,u:'SET',rmb:24,fob:12000},
-    {sku:'044',p:'Acople Rapido 2a1.5 inlet distribucion',d:'ACOPLE RAPIDO SUCCION Y DISTRIBUCION',qty:500,u:'SET',rmb:21,fob:10500},
-    {sku:'045',p:'Manguera PVC Plana 1.5" 50Mt Rolls',d:'MANGUERA BLANDA 50 MTS',qty:1000,u:'PCS',rmb:84.5,fob:84500},
-    {sku:'046',p:'Manguera metalica succion 50m',d:'MANGUERA DE SUCCION DE 50 METROS',qty:50,u:'PCS',rmb:360,fob:18000},
-    {sku:'050',p:'Conector plastico union mangueras',d:'ACOPLE UNION MANGUERAS 50 MTS',qty:500,u:'SET',rmb:1.2,fob:600},
-    {sku:'051',p:'Aspersor de riego 1/2"',d:'ASPENSORES DE RIEGO',qty:3000,u:'PCS',rmb:3.5,fob:10500},
-    {sku:'052',p:'Abrazadera 1" (18-32mm) x2',d:'1 INCH (18-32MM) X 2',qty:11000,u:'PCS',rmb:0.65,fob:7150},
-    {sku:'052',p:'Abrazadera 1.5" (21-44mm) x4',d:'1.5 INCH (21-44MM) X 4',qty:2000,u:'PCS',rmb:0.67,fob:1340},
-    {sku:'054',p:'Abrazadera 2" (38-57mm) x2',d:'2 INCH (38-57) X 2',qty:3000,u:'PCS',rmb:0.68,fob:2040},
-    {sku:'059',p:'Conector T plastico 1 pulgada',d:'T connector 1 inches',qty:500,u:'PCS',rmb:1.0,fob:500},
-  ]},
-  {id:17,oc:'018/2025',fv:'F44',ano:'2024',fecha:'2024-07-25',estado:'Stand By',totalFob:706880,totalUsd:124633,lineas:2,cliente:'',notas:'',detalle:[{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":470.0,"fob":353440.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":470.0,"fob":353440.0}]},
-  {id:18,oc:'019/2025',fv:'F45',ano:'2024',fecha:'2025-06-16',estado:'Stand By',totalFob:740314,totalUsd:131647,lineas:15,cliente:'',notas:'',detalle:[{"sku":"060","p":"Tanque de Zinc 10.000 Lt","d":"10000 LT","qty":118.0,"u":"PCS","rmb":811.0,"fob":95698.0},{"sku":"061","p":"Tanque de Zinc 5.000 Lt","d":"5000 LT","qty":130.0,"u":"PCS","rmb":688.0,"fob":89440.0},{"sku":"036","p":"Motobomba de presion","d":"MOTOBOMBA 2 X 2","qty":34.0,"u":"PCS","rmb":520.0,"fob":17680.0},{"sku":"044","p":"Acoples Rapidos","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":34.0,"u":"PCS","rmb":25.0,"fob":850.0},{"sku":"044","p":"Acoples Rapidos","d":"ACOPLE RAPIDO DE LA SUCCION Y DE LA DISTRIBUCION DE LA MOTOBOMBA","qty":34.0,"u":"PCS","rmb":21.0,"fob":714.0},{"sku":"058","p":"Geomembrana para tanque","d":"lonas de 20.000","qty":85.0,"u":"PCS","rmb":290.0,"fob":24650.0},{"sku":"062","p":"Guadañadora de gasolina de mochila","d":"Guadañadora de espalda","qty":860.0,"u":"PCS","rmb":470.0,"fob":404200.0},{"sku":"038","p":"Guadañadora de gasolina","d":"Guadañadora  de Hombro","qty":139.0,"u":"PCS","rmb":420.0,"fob":58380.0},{"sku":"042","p":"ORUGA","d":"dumper goods samples","qty":2.0,"u":"PCS","rmb":11500.0,"fob":23000.0},{"sku":"042","p":"ORUGA","d":"dumper goods samples","qty":1.0,"u":"PCS","rmb":18645.0,"fob":18645.0},{"sku":"048","p":"MotoCultor","d":"horuga y motocultor. GOOD SAMPLES","qty":1.0,"u":"PCS","rmb":1270.0,"fob":1270.0},{"sku":"048","p":"MotoCultor","d":"horuga y motocultor. GOOD SAMPLES","qty":1.0,"u":"PCS","rmb":2778.0,"fob":2778.0},{"sku":"048","p":"MotoCultor","d":"horuga y motocultor. GOOD SAMPLES","qty":1.0,"u":"PCS","rmb":2810.0,"fob":2810.0},{"sku":"048","p":"MotoCultor","d":"accesorios","qty":1.0,"u":"PCS","rmb":149.0,"fob":149.0},{"sku":"048","p":"MotoCultor","d":"accesorios","qty":1.0,"u":"PCS","rmb":50.0,"fob":50.0}]},
-  {id:19,oc:'020/2025',fv:'F47',ano:'2025',fecha:'2025-08-25',estado:'Stand By',totalFob:132730,totalUsd:25873,lineas:1,cliente:'',notas:'',detalle:[{"sku":"063","p":"Techo de PVC / PVC ROOF","d":"Blanco.  Thikness 2.0mm y de 5,8 mm","qty":1035.0,"u":"PCS","rmb":118.0,"fob":132730.0}]},
-  {id:20,oc:'021/2026',fv:'F48',ano:'2026',fecha:'2025-09-08',estado:'Completada',totalFob:307275,totalUsd:61971,lineas:8,cliente:'',notas:'',detalle:[
-    {sku:'043',p:'Tanque almacenamiento 20000 Lt',d:'20.000 LT',qty:221,u:'PCS',rmb:1100,fob:243100},
-    {sku:'036',p:'Motobomba de presion 2x2',d:'Green 2x2',qty:80,u:'PCS',rmb:488.4,fob:39072},
-    {sku:'028',p:'Fumigadora espalda a motor',d:'Black/Green 25L',qty:40,u:'PCS',rmb:304,fob:12160},
-    {sku:'044',p:'ACOPLES RAPIDA 2.5 a 2',d:'Silver aluminium',qty:40,u:'PCS',rmb:22,fob:880},
-    {sku:'044',p:'ACOPLES RAPIDA 2 a 1.5',d:'Silver aluminium',qty:40,u:'PCS',rmb:21,fob:840},
-    {sku:'044',p:'ACOPLES roscada hembra 2.5"',d:'Silver aluminium',qty:40,u:'PCS',rmb:22,fob:880},
-    {sku:'044',p:'ACOPLES roscada hembra 2"',d:'Silver aluminium',qty:40,u:'PCS',rmb:22,fob:880},
-    {sku:'045',p:'Manguera PVC Plana 1.5" 50m',d:'blanda 50m',qty:100,u:'PCS',rmb:84.5,fob:8450},
-  ]},
-  {id:21,oc:'022/2026',fv:'F51',ano:'2026',fecha:'2025-11-02',estado:'Stand By',totalFob:564160,totalUsd:102638,lineas:2,cliente:'',notas:'',detalle:[{"sku":"008,2","p":"Fumigadora Espalda Dual Electrica_Manual","d":"green/white/GRAY with new box, 20 lt","qty":1370.0,"u":"PCS","rmb":205.0,"fob":280850.0},{"sku":"008,2","p":"Fumigadora Espalda Dual Electrica_Manual","d":"green/white/GRAY with new box, 20 lt","qty":1382.0,"u":"PCS","rmb":205.0,"fob":283310.0}]},
-  {id:22,oc:'023/2026',fv:'F51',ano:'2026',fecha:'2025-11-02',estado:'Stand By',totalFob:1343630,totalUsd:243772,lineas:4,cliente:'',notas:'',detalle:[{"sku":"008,2","p":"Fumigadora Espalda Dual Electrica_Manual","d":"green/white/GRAY with new box, 20 lt","qty":1382.0,"u":"PCS","rmb":205.0,"fob":283310.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":470.0,"fob":353440.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":470.0,"fob":353440.0},{"sku":"028","p":"FUMIGADORA DE ESPALDA A MOTOR Gasolina","d":"25 LITROS A GASOLINA","qty":752.0,"u":"PCS","rmb":470.0,"fob":353440.0}]},
-  {id:23,oc:'024/2026',fv:'F49',ano:'2026',fecha:'2025-10-25',estado:'Stand By',totalFob:2435218,totalUsd:447730,lineas:28,cliente:'',notas:'',detalle:[
-    {sku:'043',p:'Tanque almacenamiento 20.000 LT',d:'20.000 LT',qty:500,u:'PCS',rmb:1100,fob:550000},
-    {sku:'043',p:'Tanque almacenamiento 20.000 LT',d:'20.000 LT',qty:500,u:'PCS',rmb:1100,fob:550000},
-    {sku:'043',p:'Tanque almacenamiento 20.000 LT',d:'20.000 LT (KMTC)',qty:500,u:'PCS',rmb:1100,fob:550000},
-    {sku:'028',p:'Fumigadora espalda a motor 25L',d:'Black/Green 25L',qty:1000,u:'PCS',rmb:304,fob:304000},
-    {sku:'036',p:'Motobomba de presion 2x2',d:'Green 2x2',qty:1500,u:'PCS',rmb:488.4,fob:732600},
-    {sku:'043',p:'Tanque almacenamiento 20.000 LT',d:'20.000 LT (KMTC)',qty:158,u:'PCS',rmb:1100,fob:173800},
-    {sku:'043',p:'Tanque almacenamiento 20.000 LT',d:'20.000 LT (KMTC)',qty:158,u:'PCS',rmb:1100,fob:173800},
-    {sku:'044',p:'ACOPLES RAPIDA 2.5 a 2 Pulg',d:'Silver aluminium',qty:500,u:'PCS',rmb:22,fob:11000},
-    {sku:'044',p:'ACOPLES RAPIDA 2 a 1.5 Pulg',d:'Silver aluminium',qty:500,u:'PCS',rmb:21,fob:10500},
-    {sku:'044',p:'ACOPLES roscada hembra 2.5 Pulg',d:'Silver aluminium',qty:500,u:'PCS',rmb:22,fob:11000},
-    {sku:'044',p:'ACOPLES roscada hembra 2 Pulg',d:'Silver aluminium',qty:500,u:'PCS',rmb:22,fob:11000},
-    {sku:'045',p:'Manguera PVC Plana 1.5"',d:'MANGUERA BLANDA 50m',qty:1000,u:'PCS',rmb:84.5,fob:84500},
-    {sku:'046',p:'Manguera succion 50m',d:'MANGUERA SUCCION 50m',qty:50,u:'PCS',rmb:360,fob:18000},
-    {sku:'050',p:'Acople union mangueras 50m',d:'Acople union mangueras',qty:500,u:'PCS',rmb:1.2,fob:600},
-    {sku:'051',p:'Aspensores de riego',d:'Aspersores riego',qty:3000,u:'PCS',rmb:3.5,fob:10500},
-    {sku:'052',p:'Abrazadera 1"',d:'1 INCH (18-32MM) x2',qty:11000,u:'PCS',rmb:0.65,fob:7150},
-    {sku:'053',p:'Abrazadera 1.5"',d:'1.5 INCH (21-44MM) x4',qty:2000,u:'PCS',rmb:0.67,fob:1340},
-    {sku:'054',p:'Abrazadera 2"',d:'2 INCH (38-57) x2',qty:3000,u:'PCS',rmb:0.68,fob:2040},
-    {sku:'059',p:'Acople T/Y plastico',d:'T connector',qty:500,u:'PCS',rmb:1,fob:500},
-    {sku:'038',p:'Guadañadora de gasolina',d:'Black/Green',qty:200,u:'PCS',rmb:309.55,fob:61910},
-    {sku:'060',p:'Manguera succion 5m',d:'Succion 2" x 5m',qty:500,u:'PCS',rmb:7.73,fob:3865},
-    {sku:'061',p:'Manguera lona 1.5" x 50m',d:'Lona plana',qty:1000,u:'ROLLS',rmb:16,fob:16000},
-    {sku:'062',p:'Acople T plastico 2" a 1"',d:'T connector',qty:500,u:'PCS',rmb:1,fob:500},
-    {sku:'063',p:'Aspersor 1" plastico',d:'Aspersor 1"',qty:3000,u:'PCS',rmb:0.9,fob:2700},
-    {sku:'064',p:'Motobomba 6.5HP con acoples',d:'6.5HP con acoples',qty:500,u:'PCS',rmb:105,fob:52500},
-  ]},
-  {id:24,oc:'025/2026',fv:'F57',ano:'2026',fecha:'2025-11-14',estado:'Stand By',totalFob:81000,totalUsd:14347,lineas:2,cliente:'',notas:'',detalle:[{"sku":"064","p":"Ordeño de Vacas / Milking Cows Gasoline","d":"gasoline machine","qty":30.0,"u":"PCS","rmb":1925.0,"fob":57750.0},{"sku":"069","p":"Ordeño de Vacas / Milking Cows Gasoline and electric","d":"Dual Machine.","qty":10.0,"u":"PCS","rmb":2325.0,"fob":23250.0}]},
-  {id:25,oc:'026/2026',fv:'F58',ano:'2026',fecha:'2025-11-14',estado:'Stand By',totalFob:1170800,totalUsd:206314,lineas:4,cliente:'',notas:'',detalle:[{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":400.0,"u":"SET","rmb":790.0,"fob":316000.0},{"sku":"001","p":"Fumigadora Estacionaria a Gasolina","d":"black/gray","qty":400.0,"u":"SET","rmb":790.0,"fob":316000.0},{"sku":"062","p":"Guadañadora de gasolina de mochila","d":"Guadañadora de espalda","qty":600.0,"u":"PCS","rmb":478.0,"fob":286800.0},{"sku":"038","p":"Guadañadora de gasolina","d":"Guadañadora  de Hombro","qty":600.0,"u":"PCS","rmb":420.0,"fob":252000.0}]},
-  {id:26,oc:'027/2026',fv:'F58',ano:'2026',fecha:'2025-11-14',estado:'Stand By',totalFob:1978558,totalUsd:387808,lineas:30,cliente:'',notas:'F58 · Vessel: CSCL YELLOW SEA / EVER GENIUS',detalle:D027},
-  {id:27,oc:'028/2026',fv:'',ano:'2026',fecha:'2026-04-17',estado:'Stand By',totalFob:752210,totalUsd:137977,lineas:5,cliente:'',notas:'Contenedores 111, 112 y 113',detalle:[
-    {sku:'062',p:'Guadañadora de gasolina de mochila',d:'Guadañadora de espalda · Cont 111',qty:1100,u:'PCS',rmb:470,fob:517000},
-    {sku:'002',p:'PLASTIC PALLETS',d:'black · mejor calidad · Cont 112',qty:1285,u:'PCS',rmb:59,fob:75815},
-    {sku:'002',p:'PLASTIC PALLETS',d:'black · mejor calidad · Cont 113',qty:295,u:'PCS',rmb:59,fob:17405},
-    {sku:'010',p:'CAJA DE BOTIQUIN',d:'Cont 113',qty:1000,u:'PCS',rmb:45,fob:45000},
-    {sku:'013',p:'Punto ecologico con base de 55 LT',d:'black · Cont 113',qty:3000,u:'PCS',rmb:32.33,fob:96990},
-  ]},
-  {id:28,oc:'029/2026',fv:'',ano:'2026',fecha:'2026-04-28',estado:'Stand By',totalFob:648000,totalUsd:114703,lineas:1,cliente:'',notas:'Cont 113',detalle:[
-    {sku:'27',p:'KIT DE PROTECCION',d:'trajes',qty:5000,u:'PCS',rmb:129.6,fob:648000},
-  ]},
-  {id:29,oc:'030/2026',fv:'F50',ano:'2026',fecha:'2026-02-09',estado:'Stand By',totalFob:185730,totalUsd:34020,lineas:1,cliente:'',notas:'MSC ALTAIR · BL: 177FLBLBS8Q3551A',detalle:[
-    {sku:'008,2',p:'Fumigadora Espalda Dual Electrica_Manual',d:'green/white/GRAY · new box · 20 lt',qty:906,u:'PCS',rmb:205,fob:185730},
-  ]},
-  {id:30,oc:'031/2026',fv:'F50',ano:'2026',fecha:'2026-02-09',estado:'Stand By',totalFob:0,totalUsd:0,lineas:1,cliente:'',notas:'POSORJA EXPRESS · Muestra',detalle:[
-    {sku:'008,2',p:'Fumigadora Espalda Dual Electrica_Manual',d:'green/white/GRAY · new box · 20 lt (muestra)',qty:10,u:'PCS',rmb:0,fob:0},
-  ]},
-];
-
-const PRODS_INIT=[
-  {id:1,sku:'001',n:'Fumigadora Estacionaria a Gasolina',g:'Equipos',rmb:760,sub:'84.13.50.00.00',apro:'Aprobado',d:'168F-6.5HP · 15-30L/min · 1.5-3.5Mpa',fotos:[]},
-  {id:2,sku:'002',n:'ESTIBAS PLASTICAS',g:'Almacenamiento',rmb:47.5,sub:'39.26.90.90.90',apro:'Aprobado',d:'Polipropileno · 1.20x1x20 · Apilable',fotos:[]},
-  {id:3,sku:'010',n:'CAJA DE BOTIQUIN',g:'Seguridad',rmb:45,sub:'',apro:'Aprobado',d:'Caja de primeros auxilios',fotos:[]},
-  {id:4,sku:'013',n:'Punto ecologico con base 55 LT',g:'Otros',rmb:32.33,sub:'',apro:'Aprobado',d:'Base 55L · Negro · Separación residuos',fotos:[]},
-  {id:5,sku:'015',n:'Teja de zinc',g:'Construcción',rmb:15,sub:'72.10.41.00.00',apro:'Aprobado',d:'0.17mm · 2100x800mm · Galvalume',fotos:[]},
-  {id:6,sku:'027',n:'KIT DE PROTECCION',g:'Seguridad',rmb:129.6,sub:'',apro:'Aprobado',d:'Trajes de protección',fotos:[]},
-  {id:7,sku:'028',n:'FUMIGADORA DE ESPALDA A MOTOR',g:'Equipos',rmb:304,sub:'84.24.41.00.00',apro:'Aprobado',d:'25L · 3-8L/min · 1.5-2.5Mpa',fotos:[]},
-  {id:8,sku:'036',n:'Motobomba de presion 2x2',g:'Equipos',rmb:488.4,sub:'84.13.70.1100',apro:'Aprobado',d:'Motobomba 2"x2" · Gasolina · Alta presión',fotos:[]},
-  {id:9,sku:'038',n:'Guadañadora de gasolina',g:'Equipos',rmb:309.55,sub:'',apro:'Aprobado',d:'35.8cc · 4-stroke · 7500rpm',fotos:[]},
-  {id:10,sku:'043',n:'Tanque de zinc 20.000 LT',g:'Almacenamiento',rmb:1100,sub:'73.09.00.00.00',apro:'Aprobado',d:'20.000L · Lámina galvanizada 1mm · Fibromembrana PVC',fotos:[]},
-  {id:11,sku:'044',n:'Acoples Rapidos aluminio',g:'Accesorios',rmb:22,sub:'',apro:'Aprobado',d:'Aluminio · Reducción 2.5"→2", 2"→1.5"',fotos:[]},
-  {id:12,sku:'045',n:'Manguera PVC Plana 1.5" 50m',g:'Accesorios',rmb:84.5,sub:'39.17.23.10.00',apro:'Aprobado',d:'PVC · 1.5" · 50mts por rollo',fotos:[]},
-  {id:13,sku:'046',n:'Manguera metalica succion 50m',g:'Accesorios',rmb:360,sub:'',apro:'Aprobado',d:'Succión · 50m · Transparente · Refuerzo metálico',fotos:[]},
-  {id:14,sku:'050',n:'Acople union manguera lona 2"',g:'Accesorios',rmb:1.2,sub:'',apro:'Aprobado',d:'1 SET = 2 piezas · Unión mangueras 50m',fotos:[]},
-  {id:15,sku:'051',n:'ASPENSORES DE RIEGO',g:'Accesorios',rmb:3.5,sub:'',apro:'Aprobado',d:'1/2" · 1.0-2.0bar · 10-11m alcance',fotos:[]},
-  {id:16,sku:'052',n:'ABRAZADERAS 1 Pulgada',g:'Accesorios',rmb:0.65,sub:'',apro:'Aprobado',d:'1" (18-32mm) · Pack x2',fotos:[]},
-  {id:17,sku:'053',n:'ABRAZADERAS 1.5 Pulgadas',g:'Accesorios',rmb:0.67,sub:'',apro:'Aprobado',d:'1.5" (21-44mm) · Pack x4',fotos:[]},
-  {id:18,sku:'054',n:'ABRAZADERAS 2 Pulgadas',g:'Accesorios',rmb:0.68,sub:'',apro:'Aprobado',d:'2" (38-57mm) · Pack x2',fotos:[]},
-  {id:19,sku:'055',n:'Manguera PVC Plana 1 pulgada 100m',g:'Accesorios',rmb:128,sub:'',apro:'Aprobado',d:'PVC · 1" · 100 metros por rollo',fotos:[]},
-  {id:20,sku:'059',n:'Acople Y/T plastico 1"',g:'Accesorios',rmb:1,sub:'',apro:'Aprobado',d:'Plástico · 1 pulgada · Forma Y o T',fotos:[]},
-  {id:21,sku:'060',n:'Manguera de succion 5 metros',g:'Accesorios',rmb:7.73,sub:'',apro:'Aprobado',d:'Succión 2" × 5 metros',fotos:[]},
-  {id:22,sku:'061',n:'Manguera de Lona Plana 1.5" x 50m',g:'Accesorios',rmb:16,sub:'',apro:'Aprobado',d:'Lona plana · 1.5" · 50 metros',fotos:[]},
-  {id:23,sku:'062',n:'Guadañadora de gasolina de mochila',g:'Equipos',rmb:470,sub:'',apro:'Aprobado',d:'Guadañadora de espalda · Gasolina',fotos:[]},
-  {id:24,sku:'063',n:'Aspersor 1" plastico',g:'Accesorios',rmb:0.9,sub:'',apro:'Aprobado',d:'Aspersor plástico · 1 pulgada',fotos:[]},
-  {id:25,sku:'064',n:'Motobomba 6.5HP con acoples',g:'Equipos',rmb:105,sub:'',apro:'Aprobado',d:'Motor 6.5HP · Con acoples completos',fotos:[]},
-];
-
-// STATE
-let S={
-  user:null, page:'cots',
-  cots:null, prods:null,
-  ncL:[], ncC:'', ncN:'',
-  fE:'', fA:'', fS:'', pS:'', pG:'',
-};
-
-// ─── STORAGE (localStorage para persistencia real) ───
-function saveData(){
-  try{
-    localStorage.setItem('mt_cots', JSON.stringify(S.cots));
-    localStorage.setItem('mt_prods', JSON.stringify(S.prods));
-  }catch(e){}
-}
-function loadData(){
-  try{
-    const c=localStorage.getItem('mt_cots');
-    const p=localStorage.getItem('mt_prods');
-    S.cots = c?JSON.parse(c):[...OCS_INIT];
-    S.prods = p?JSON.parse(p):[...PRODS_INIT];
-  }catch(e){
-    S.cots=[...OCS_INIT];
-    S.prods=[...PRODS_INIT];
-  }
-}
-
-// ─── HELPERS ───
-const fN=(n,d=0)=>Number(n||0).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g,',');
-const fR=n=>'¥'+fN(n,0);
-const fU=n=>'$'+fN(n,2);
-const todayDisp=()=>new Date().toLocaleDateString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit'});
-const todayISO=()=>new Date().toISOString().split('T')[0];
-const curYear=()=>new Date().getFullYear();
-
-function nextOC(){
-  const nums=S.cots.map(c=>parseInt(c.oc)).filter(n=>!isNaN(n));
-  return String(Math.max(...nums,31)+1).padStart(3,'0')+'/'+curYear();
-}
-
-const BADGES={
-  'Completada':'<span class="badge badge-green">Completada</span>',
-  'En proceso':'<span class="badge badge-yellow">En proceso</span>',
-  'En tránsito':'<span class="badge badge-blue">En tránsito</span>',
-  'Stand By':'<span class="badge badge-orange">Stand By</span>',
-  'Aprobada':'<span class="badge badge-green">Aprobada ✓</span>',
-  'Rechazada':'<span class="badge badge-red">Rechazada</span>',
-  'Aprobado':'<span class="badge badge-green">Aprobado</span>',
-  'Pendiente':'<span class="badge badge-yellow">Pendiente</span>',
-};
-const B=k=>BADGES[k]||`<span class="badge badge-gray">${k||'—'}</span>`;
-
-let _tc=0;
-function toast(msg,type='success'){
-  const el=document.createElement('div');
-  el.className=`toast toast-${type}`;
-  el.innerHTML=`<i class="ti ti-${type==='success'?'circle-check':type==='error'?'circle-x':'alert-triangle'}" style="font-size:15px;"></i>${msg}`;
-  document.getElementById('toasts').appendChild(el);
-  setTimeout(()=>el.style.opacity='0',2800);
-  setTimeout(()=>el.remove(),3100);
-}
-
-function openModal(html){
-  document.getElementById('modal-box').innerHTML=html;
-  document.getElementById('modal-bg').classList.remove('hidden');
-  bindModal();
-}
-function closeModal(){
-  document.getElementById('modal-bg').classList.add('hidden');
-}
-
-// ─── AUTH ───
-function doLogin(){
-  const e=document.getElementById('le').value.trim().toLowerCase();
-  const p=document.getElementById('lp').value.trim();
-  const u=USERS.find(x=>x.e.toLowerCase()===e&&x.p===p);
-  if(!u){document.getElementById('login-err').style.display='block';return;}
-  S.user=u;
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('app').style.display='flex';
-  document.getElementById('tb-uname').textContent=u.n;
-  document.getElementById('tb-role').textContent=u.r.toUpperCase();
-  loadData();
-  renderSidebar();
-  renderPage();
-}
-function quickLogin(r){
-  const u=USERS.find(x=>x.r===r);if(!u)return;
-  document.getElementById('le').value=u.e;
-  document.getElementById('lp').value=u.p;
-  doLogin();
-}
-function doLogout(){
-  S.user=null;
-  document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('app').style.display='none';
-}
-
-// ─── SIDEBAR ───
-function renderSidebar(){
-  const r=S.user.r;
-  let html='';
-  html+=`<span class="sb-section">Importación</span>`;
-  html+=`<div class="sb-item ${S.page==='cots'?'active':''}" data-p="cots"><i class="ti ti-calculator"></i>Cotizaciones<span class="sb-badge">${S.cots.length}</span></div>`;
-  html+=`<div class="sb-div"></div><span class="sb-section">Catálogo</span>`;
-  html+=`<div class="sb-item ${S.page==='prods'?'active':''}" data-p="prods"><i class="ti ti-package"></i>Productos<span class="sb-badge">${S.prods.length}</span></div>`;
-  document.getElementById('sidebar').innerHTML=html;
-  document.querySelectorAll('.sb-item[data-p]').forEach(el=>{
-    el.onclick=()=>{S.page=el.dataset.p;renderSidebar();renderPage();};
-  });
-}
-
-// ─── PAGES ───
-function renderPage(){
-  const ma=document.getElementById('main-area');
-  if(S.page==='cots') ma.innerHTML=pageCots();
-  else if(S.page==='prods') ma.innerHTML=pageProds();
-  bindPage();
-}
-
-function pageCots(){
-  const fil=S.cots.filter(c=>{
-    if(S.fE&&c.estado!==S.fE)return false;
-    if(S.fA&&c.ano!==S.fA)return false;
-    if(S.fS){const s=S.fS.toLowerCase();if(!`${c.oc} ${c.fv} ${c.cliente||''} ${c.notas||''}`.toLowerCase().includes(s))return false;}
-    return true;
-  });
-  const byE=e=>S.cots.filter(c=>c.estado===e).length;
-  const anos=[...new Set(S.cots.map(c=>c.ano))].sort().reverse();
-
-  return `
-  <div class="page-header">
-    <div>
-      <div class="page-title">Cotizaciones</div>
-      <div class="page-sub">Próxima OC: <b style="color:var(--v);">${nextOC()}</b> · ${todayDisp()} · ${fil.length} de ${S.cots.length} OCs</div>
+<!-- WIZARD -->
+<div class="overlay hidden" id="wizardOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Nuevo gasto</h3>
+      <button class="btn-close" onclick="window.gc.closeWizard()">×</button>
     </div>
-    <div class="page-actions">
-      <button class="btn btn-gold" id="btn-new-cot"><i class="ti ti-plus"></i>Nueva Cotización</button>
+    <div class="wiz-steps" id="wizSteps"></div>
+    <div class="modal-body" id="wizBody"></div>
+    <div class="modal-ftr">
+      <button class="btn-sec" id="wizBtnBack" onclick="window.gc.wizBack()">Atrás</button>
+      <button class="btn-prim" id="wizBtnNext" onclick="window.gc.wizNext()">Siguiente</button>
     </div>
   </div>
+</div>
 
-  <div class="kpi-row kpi-4">
-    <div class="kpi-card" onclick="toggleFilter('fE','Stand By')" style="${S.fE==='Stand By'?'border:2px solid #e65100;':''}">
-      <div class="kpi-card" style="border-top-color:#e65100;pointer-events:none;padding:0;border:none;box-shadow:none;">
-        <div class="kpi-label">Stand By</div>
-        <div class="kpi-val" style="color:#e65100;">${byE('Stand By')}</div>
-        <div class="kpi-sub">esperando confirmación</div>
+<!-- PROVEEDOR MODAL -->
+<div class="overlay hidden" id="provOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="provModalTitle">Nuevo proveedor</h3>
+      <button class="btn-close" onclick="window.gc.closeProvModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>NIT *</label><input id="pNit" placeholder="900.123.456-7"></div>
+        <div class="form-group"><label>Razón social *</label><input id="pRs" placeholder="Empresa S.A.S."></div>
       </div>
-    </div>
-    <div class="kpi-card" onclick="toggleFilter('fE','En proceso')">
-      <div class="kpi-label">En proceso</div>
-      <div class="kpi-val">${byE('En proceso')}</div>
-      <div class="kpi-sub">importación activa</div>
-    </div>
-    <div class="kpi-card" onclick="toggleFilter('fE','Completada')" style="border-top-color:#27ae60;">
-      <div class="kpi-label">Completadas</div>
-      <div class="kpi-val" style="color:#27ae60;">${byE('Completada')}</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Total OCs</div>
-      <div class="kpi-val">${S.cots.length}</div>
-    </div>
-  </div>
-
-  <div class="filter-bar">
-    <input class="filter-input" id="f-search" placeholder="Buscar OC, cliente, nota..." value="${S.fS}" style="width:190px;">
-    <select class="filter-input" id="f-estado" style="width:135px;">
-      <option value="">Todos los estados</option>
-      <option value="Stand By" ${S.fE==='Stand By'?'selected':''}>Stand By</option>
-      <option value="En proceso" ${S.fE==='En proceso'?'selected':''}>En proceso</option>
-      <option value="Completada" ${S.fE==='Completada'?'selected':''}>Completada</option>
-      <option value="En tránsito" ${S.fE==='En tránsito'?'selected':''}>En tránsito</option>
-    </select>
-    <select class="filter-input" id="f-ano" style="width:100px;">
-      <option value="">Año</option>
-      ${anos.map(a=>`<option value="${a}" ${S.fA===a?'selected':''}>${a}</option>`).join('')}
-    </select>
-    ${(S.fE||S.fA||S.fS)?`<button class="btn btn-out btn-sm" onclick="S.fE='';S.fA='';S.fS='';renderPage()"><i class="ti ti-x"></i>Limpiar</button>`:''}
-  </div>
-
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title"><i class="ti ti-table"></i>${fil.length} resultados</div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>OC #</th><th>Año</th><th>Fact.Venta</th><th>Fecha</th>
-          <th>Cliente</th><th>Líneas</th><th>FOB RMB</th><th>CIF USD</th>
-          <th>Estado</th><th>Acciones</th>
-        </tr></thead>
-        <tbody>
-          ${fil.map(c=>`<tr>
-            <td><b style="color:var(--v);font-size:13px;">${c.oc}</b></td>
-            <td>${B('').replace('—','')}
-              <span class="badge badge-gold">${c.ano}</span></td>
-            <td><span class="badge badge-blue">${c.fv||'—'}</span></td>
-            <td style="font-size:11.5px;">${c.fecha||'—'}</td>
-            <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;font-size:11.5px;">${c.cliente||'—'}</td>
-            <td style="text-align:center;"><span class="badge badge-gray">${c.lineas}</span></td>
-            <td><b>${fR(c.totalFob)}</b></td>
-            <td style="font-size:11.5px;">${c.totalUsd>0?fU(c.totalUsd):'—'}</td>
-            <td>${B(c.estado)}</td>
-            <td>
-              <div style="display:flex;gap:4px;">
-                <button class="btn btn-dark btn-sm btn-ver-cot" data-id="${c.id}"><i class="ti ti-eye"></i></button>
-                <button class="btn btn-pdf btn-sm" data-id="${c.id}" onclick="exportPDF(${c.id})"><i class="ti ti-file-type-pdf"></i></button>
-                ${c.estado==='Stand By'?`
-                  <button class="btn btn-ok btn-sm btn-apro" data-id="${c.id}" title="Aprobar"><i class="ti ti-check"></i></button>
-                  <button class="btn btn-reject btn-sm btn-recha" data-id="${c.id}" title="Rechazar"><i class="ti ti-x"></i></button>`:''}
-              </div>
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>`;
-}
-
-function pageProds(){
-  const grupos=[...new Set(S.prods.map(p=>p.g))].sort();
-  const fil=S.prods.filter(p=>{
-    if(S.pS&&!`${p.sku} ${p.n}`.toLowerCase().includes(S.pS.toLowerCase()))return false;
-    if(S.pG&&p.g!==S.pG)return false;
-    return true;
-  });
-  const icons={Equipos:'ti-engine',Accesorios:'ti-plug',Almacenamiento:'ti-box',Construcción:'ti-building',Agricultura:'ti-plant',Herramientas:'ti-tools',Seguridad:'ti-shield',default:'ti-package'};
-
-  return `
-  <div class="page-header">
-    <div>
-      <div class="page-title">Catálogo de Productos</div>
-      <div class="page-sub">${fil.length} de ${S.prods.length} productos</div>
-    </div>
-    <button class="btn btn-gold btn-sm" id="btn-new-prod"><i class="ti ti-plus"></i>Nuevo Producto</button>
-  </div>
-  <div class="filter-bar">
-    <input class="filter-input" id="p-search" placeholder="SKU, nombre..." value="${S.pS}" style="width:170px;">
-    <select class="filter-input" id="p-grupo" style="width:150px;">
-      <option value="">Todos los grupos</option>
-      ${grupos.map(g=>`<option value="${g}" ${S.pG===g?'selected':''}>${g}</option>`).join('')}
-    </select>
-    ${(S.pS||S.pG)?`<button class="btn btn-out btn-sm" onclick="S.pS='';S.pG='';renderPage()"><i class="ti ti-x"></i></button>`:''}
-  </div>
-  <div class="prod-grid">
-    ${fil.map(p=>`
-    <div class="prod-card">
-      <div class="prod-head">
-        <div style="display:flex;align-items:center;gap:8px;">
-          ${p.fotos&&p.fotos.length?`<img src="${p.fotos[0]}" style="width:34px;height:34px;border-radius:6px;object-fit:cover;flex-shrink:0;" alt="">`:
-          `<div style="width:34px;height:34px;border-radius:6px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="ti ${icons[p.g]||icons.default}" style="color:var(--d);font-size:16px;"></i></div>`}
-          <div>
-            <div class="prod-name">${p.n}</div>
-            <div class="prod-sku">SKU ${p.sku}</div>
-          </div>
-        </div>
+      <div class="form-group"><label>Nombre comercial</label><input id="pNombre" placeholder="Como opera comercialmente"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Dirección</label><input id="pDir" placeholder="Calle 10 # 5-20"></div>
+        <div class="form-group"><label>Ciudad</label><input id="pCiudad" placeholder="Pereira"></div>
       </div>
-      <div class="prod-body">
-        <div class="prod-row"><span>${p.g}</span><span>${B(p.apro)}</span></div>
-        <div class="prod-row"><span>Precio RMB</span><span>${p.rmb?'¥'+p.rmb:'—'}</span></div>
-        <div class="prod-row"><span>Subpartida</span><span style="font-size:10.5px;">${p.sub||'—'}</span></div>
-        <div class="prod-row" style="font-size:10.5px;color:var(--tl);border-bottom:none;padding-top:4px;">${p.d||''}</div>
+      <div class="form-row">
+        <div class="form-group"><label>Correo</label><input id="pCorreo" type="email" placeholder="info@empresa.com"></div>
+        <div class="form-group"><label>Teléfono</label><input id="pTel" placeholder="3001234567"></div>
       </div>
-      <div style="padding:7px 12px;border-top:0.5px solid var(--bo);display:flex;gap:5px;">
-        <button class="btn btn-out btn-sm btn-edit-prod" data-id="${p.id}" style="flex:1;"><i class="ti ti-edit"></i>Editar</button>
-        <button class="btn btn-danger btn-sm btn-del-prod" data-id="${p.id}"><i class="ti ti-trash"></i></button>
-      </div>
-    </div>`).join('')}
-  </div>`;
-}
-
-// ─── BIND PAGE EVENTS ───
-function bindPage(){
-  // Filters
-  const fs=document.getElementById('f-search');if(fs)fs.oninput=e=>{S.fS=e.target.value;renderPage();};
-  const fe=document.getElementById('f-estado');if(fe)fe.onchange=e=>{S.fE=e.target.value;renderPage();};
-  const fa=document.getElementById('f-ano');if(fa)fa.onchange=e=>{S.fA=e.target.value;renderPage();};
-  const ps=document.getElementById('p-search');if(ps)ps.oninput=e=>{S.pS=e.target.value;renderPage();};
-  const pg=document.getElementById('p-grupo');if(pg)pg.onchange=e=>{S.pG=e.target.value;renderPage();};
-  // Cotizaciones
-  document.getElementById('btn-new-cot')?.addEventListener('click',()=>{S.ncL=[];S.ncC='';S.ncN='';openModal(modalNewCot());});
-  document.querySelectorAll('.btn-ver-cot').forEach(b=>b.onclick=()=>openModal(modalVerCot(+b.dataset.id)));
-  document.querySelectorAll('.btn-apro').forEach(b=>b.onclick=()=>{
-    const c=S.cots.find(x=>x.id===+b.dataset.id);
-    if(c){c.estado='En proceso';saveData();renderSidebar();renderPage();toast('Cotización aprobada → importación activa ✓');}
-  });
-  document.querySelectorAll('.btn-recha').forEach(b=>b.onclick=()=>{
-    const c=S.cots.find(x=>x.id===+b.dataset.id);
-    if(c){c.estado='Rechazada';saveData();renderSidebar();renderPage();toast('Cotización rechazada','warn');}
-  });
-  // Productos
-  document.getElementById('btn-new-prod')?.addEventListener('click',()=>openModal(modalProd(null)));
-  document.querySelectorAll('.btn-edit-prod').forEach(b=>b.onclick=()=>{
-    const p=S.prods.find(x=>x.id===+b.dataset.id);openModal(modalProd(p));
-  });
-  document.querySelectorAll('.btn-del-prod').forEach(b=>b.onclick=()=>{
-    if(confirm('¿Eliminar este producto?')){
-      S.prods=S.prods.filter(x=>x.id!==+b.dataset.id);
-      saveData();renderSidebar();renderPage();toast('Producto eliminado','warn');
-    }
-  });
-}
-
-function toggleFilter(key,val){S[key]=S[key]===val?'':val;renderPage();}
-
-// ─── MODAL HELPERS ───
-function bindModal(){
-  document.getElementById('modal-bg').onclick=e=>{if(e.target===document.getElementById('modal-bg'))closeModal();};
-  document.querySelectorAll('.modal-close,.btn-modal-close').forEach(b=>b.onclick=closeModal);
-  // new cot
-  document.getElementById('btn-add-line')?.addEventListener('click',()=>openModal(modalAddLine()));
-  document.querySelectorAll('.btn-del-line').forEach(b=>b.onclick=()=>{S.ncL.splice(+b.dataset.i,1);openModal(modalNewCot());});
-  document.getElementById('btn-save-cot')?.addEventListener('click',saveCot);
-  document.getElementById('nc-cliente')?.addEventListener('input',e=>S.ncC=e.target.value);
-  document.getElementById('nc-notas')?.addEventListener('input',e=>S.ncN=e.target.value);
-  // add line
-  document.getElementById('al-sku')?.addEventListener('change',onAlSku);
-  document.getElementById('al-qty')?.addEventListener('input',updTotal);
-  document.getElementById('al-rmb')?.addEventListener('input',updTotal);
-  document.getElementById('btn-save-line')?.addEventListener('click',saveLine);
-  // prod
-  document.getElementById('btn-save-prod')?.addEventListener('click',saveProd);
-  document.getElementById('fi-foto')?.addEventListener('change',function(){addFoto(this);});
-  // ver cot
-  document.querySelectorAll('.btn-apro-modal').forEach(b=>b.onclick=()=>{
-    const c=S.cots.find(x=>x.id===+b.dataset.id);
-    if(c){c.estado='En proceso';saveData();renderSidebar();renderPage();closeModal();toast('Aprobada → importación activa ✓');}
-  });
-  document.querySelectorAll('.btn-recha-modal').forEach(b=>b.onclick=()=>{
-    const c=S.cots.find(x=>x.id===+b.dataset.id);
-    if(c){c.estado='Rechazada';saveData();renderSidebar();renderPage();closeModal();toast('Rechazada','warn');}
-  });
-}
-
-// ─── MODALS HTML ───
-function lineCard(l,i,editable){
-  const p=S.prods.find(x=>x.sku===l.sku||x.sku===l.s);
-  const icons={Equipos:'ti-engine',Accesorios:'ti-plug',Almacenamiento:'ti-box',Construcción:'ti-building',Seguridad:'ti-shield',default:'ti-package'};
-  const foto=p?.fotos?.[0]||'';
-  return `<div class="cot-line">
-    <div class="cot-foto">${foto?`<img src="${foto}" alt="">`:
-      `<i class="ti ${icons[p?.g]||icons.default}"></i>`}</div>
-    <div class="cot-body">
-      <div class="cot-top">
-        ${(l.sku||l.s)?`<span class="cot-sku">${l.sku||l.s}</span>`:''}
-        <span class="cot-name">${l.p||l.producto}</span>
-      </div>
-      ${(l.d||l.descripcion)?`<div class="cot-desc">${l.d||l.descripcion}</div>`:''}
-      <div class="cot-nums">
-        <div><div class="cot-num-lbl">QTY</div><div class="cot-num-val">${(l.qty||0).toLocaleString()}</div></div>
-        <div><div class="cot-num-lbl">Unidad</div><div class="cot-num-val">${l.u||l.unidad||'PCS'}</div></div>
-        <div><div class="cot-num-lbl">Precio RMB</div><div class="cot-num-val">${fR(l.rmb||l.precio_rmb||0)}</div></div>
-        <div><div class="cot-num-lbl">Total FOB</div><div class="cot-num-val gold">${fR(l.fob||l.total_fob||0)}</div></div>
-      </div>
+      <div class="form-group"><label>Categoría principal</label>
+        <select id="pCat"><option value="">Seleccionar...</option></select></div>
+      <div id="provErr" style="color:var(--error);font-size:12px;margin-top:8px;display:none">Completa NIT y razón social</div>
     </div>
-    ${editable?`<button class="cot-del btn-del-line" data-i="${i}"><i class="ti ti-x" style="font-size:11px;"></i></button>`:''}
-  </div>`;
-}
-
-function modalNewCot(){
-  const oc=nextOC(), total=S.ncL.reduce((s,l)=>s+(l.fob||0),0);
-  return `
-  <div class="modal-head">
-    <div><div class="modal-title">Nueva Cotización</div></div>
-    <button class="modal-close"><i class="ti ti-x"></i></button>
-  </div>
-  <div class="modal-body">
-    <div class="auto-strip">
-      <div class="auto-cell"><div class="auto-label">OC Consecutivo</div><div class="auto-val">${oc}</div></div>
-      <div class="auto-cell"><div class="auto-label">Año</div><div class="auto-val">${curYear()}</div></div>
-      <div class="auto-cell"><div class="auto-label">Fecha de creación</div><div class="auto-val" style="font-size:16px;padding-top:4px;">${todayDisp()}</div></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
-      <div>
-        <label class="form-label">Cliente / Destinatario</label>
-        <input class="form-input" id="nc-cliente" value="${S.ncC}" placeholder="Nombre del cliente o empresa...">
-      </div>
-      <div>
-        <label class="form-label">Notas e instrucciones</label>
-        <textarea class="form-input form-textarea" id="nc-notas" placeholder="Ej: AILY facturar bajo GZ PIANT OPTICS CO.,LTD...">${S.ncN}</textarea>
-      </div>
-    </div>
-    <div style="border-top:0.5px solid var(--bo);padding-top:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--v);text-transform:uppercase;letter-spacing:.5px;">Productos · ${S.ncL.length}</div>
-        </div>
-        <button class="btn btn-gold btn-sm" id="btn-add-line"><i class="ti ti-plus"></i>Agregar Producto</button>
-      </div>
-      ${S.ncL.length===0?`
-        <div style="text-align:center;padding:28px;color:var(--tl);background:var(--cr);border-radius:10px;border:2px dashed var(--bd);">
-          <i class="ti ti-package" style="font-size:34px;color:var(--bd);display:block;margin-bottom:8px;"></i>
-          Toca <b style="color:var(--v);">+ Agregar Producto</b> para iniciar
-        </div>`:
-        `<div>${S.ncL.map((l,i)=>lineCard(l,i,true)).join('')}</div>
-         <div class="total-box">
-           <div>
-             <div style="color:rgba(232,220,200,.6);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">TOTAL ORDER FOB RMB</div>
-             <div style="color:var(--d);font-size:24px;font-weight:600;">${fR(total)}</div>
-           </div>
-           <div style="text-align:right;color:rgba(232,220,200,.5);font-size:12px;">${S.ncL.length} líneas<br><span style="color:var(--d);">Stand By al guardar</span></div>
-         </div>`}
+    <div class="modal-ftr">
+      <button class="btn-sec" onclick="window.gc.closeProvModal()">Cancelar</button>
+      <button class="btn-prim" onclick="window.gc.saveProv()">Guardar proveedor</button>
     </div>
   </div>
-  <div class="modal-foot">
-    <button class="btn btn-out btn-sm btn-modal-close">Cancelar</button>
-    <button class="btn btn-gold btn-sm" id="btn-save-cot" ${S.ncL.length===0?'disabled style="opacity:.4;"':''}>
-      <i class="ti ti-device-floppy"></i>Guardar como Stand By
-    </button>
-  </div>`;
-}
+</div>
 
-function modalAddLine(){
-  return `
-  <div class="modal-head">
-    <div><div class="modal-title"><i class="ti ti-plus" style="color:var(--d);margin-right:6px;"></i>Agregar Producto</div></div>
-    <button class="modal-close"><i class="ti ti-x"></i></button>
-  </div>
-  <div class="modal-body">
-    <div style="margin-bottom:12px;">
-      <label class="form-label">Seleccionar del catálogo</label>
-      <select class="form-input" id="al-sku">
-        <option value="">— Elegir SKU del catálogo —</option>
-        ${S.prods.map(p=>`<option value="${p.sku}">${p.sku} — ${p.n}</option>`).join('')}
-        <option value="nuevo">+ Producto nuevo sin SKU</option>
-      </select>
-    </div>
-    <div id="prod-preview" style="display:none;background:var(--cr);border-radius:9px;padding:10px 13px;margin-bottom:12px;border:0.5px solid var(--bo);display:none;align-items:center;gap:10px;">
-      <div id="pp-foto" style="width:48px;height:48px;border-radius:8px;background:var(--dp);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;"></div>
-      <div><div id="pp-nom" style="font-size:13px;font-weight:500;color:var(--v);"></div>
-        <div id="pp-car" style="font-size:11px;color:var(--tl);margin-top:2px;"></div></div>
-    </div>
-    <div class="form-grid">
-      <div class="form-group full"><label class="form-label">Descripción del producto *</label>
-        <input class="form-input" id="al-prod" placeholder="Nombre o descripción..."></div>
-      <div class="form-group full"><label class="form-label">Características técnicas</label>
-        <textarea class="form-input form-textarea" id="al-car" placeholder="Material, medidas, presión..."></textarea></div>
-      <div class="form-group"><label class="form-label">Cantidad *</label>
-        <input class="form-input" id="al-qty" type="number" placeholder="0" min="1"></div>
-      <div class="form-group"><label class="form-label">Unidad</label>
-        <select class="form-input" id="al-un"><option>PCS</option><option>SET</option><option>ROLL</option><option>KG</option></select></div>
-      <div class="form-group"><label class="form-label">Precio RMB ¥ *</label>
-        <input class="form-input" id="al-rmb" type="number" placeholder="0.00" step="0.01"></div>
-      <div class="form-group"><label class="form-label">Total FOB (calculado)</label>
-        <div style="background:#e8f5e9;border:1px solid #2e7d32;border-radius:8px;padding:9px 13px;display:flex;justify-content:space-between;align-items:center;">
-          <span id="al-total" style="font-size:17px;font-weight:600;color:var(--v);">¥0</span>
-          <i class="ti ti-calculator" style="color:#2e7d32;font-size:16px;"></i></div></div>
-      <div class="form-group full"><label class="form-label">Autorización</label>
-        <select class="form-input" id="al-aut">
-          <option value="">Sin autorización</option>
-          <option value="ok">ok — Autorizado</option>
-          <option value="pendiente">Pendiente</option>
-        </select></div>
-    </div>
-  </div>
-  <div class="modal-foot">
-    <button class="btn btn-out btn-sm btn-modal-close">Cancelar</button>
-    <button class="btn btn-gold btn-sm" id="btn-save-line"><i class="ti ti-plus"></i>Agregar a Cotización</button>
-  </div>`;
-}
+<input type="file" id="fileInput" accept="image/*" style="display:none" onchange="window.gc.handlePhoto(event)">
 
-function modalVerCot(id){
-  const c=S.cots.find(x=>x.id===id);if(!c)return '';
-  const det=(c.detalle||[]).filter(l=>l.p||l.producto);
-  const total=det.reduce((s,l)=>s+(l.fob||l.total_fob||0),0)||c.totalFob;
-  return `
-  <div class="modal-head">
-    <div>
-      <div class="modal-title">OC ${c.oc}</div>
-      <div class="modal-sub">${c.fecha||'—'} · ${c.cliente||'Sin cliente'}</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      ${B(c.estado)}
-      <button class="btn btn-pdf btn-sm" onclick="exportPDF(${c.id})"><i class="ti ti-file-type-pdf"></i>PDF</button>
-      <button class="modal-close"><i class="ti ti-x"></i></button>
-    </div>
-  </div>
-  <div class="modal-body">
-    <div class="auto-strip">
-      <div class="auto-cell"><div class="auto-label">OC #</div><div class="auto-val">${c.oc}</div></div>
-      <div class="auto-cell"><div class="auto-label">Fact. Venta</div><div class="auto-val" style="font-size:16px;padding-top:4px;">${c.fv||'—'}</div></div>
-      <div class="auto-cell"><div class="auto-label">Año</div><div class="auto-val">${c.ano}</div></div>
-      <div class="auto-cell"><div class="auto-label">Fecha</div><div class="auto-val" style="font-size:15px;padding-top:4px;">${c.fecha||'—'}</div></div>
-    </div>
-    ${c.notas?`<div class="nota-box"><i class="ti ti-note" style="flex-shrink:0;font-size:15px;"></i>${c.notas}</div>`:''}
-    ${det.length?`
-      <div>${det.map((l,i)=>lineCard(l,i,false)).join('')}</div>
-      <div class="total-box">
-        <div>
-          <div style="color:rgba(232,220,200,.6);font-size:10px;text-transform:uppercase;margin-bottom:3px;">TOTAL ORDER FOB RMB</div>
-          <div style="color:var(--d);font-size:23px;font-weight:600;">${fR(total)}</div>
-          ${c.totalUsd>0?`<div style="color:rgba(232,220,200,.4);font-size:11px;margin-top:2px;">CIF USD: ${fU(c.totalUsd)}</div>`:''}
-        </div>
-        <div style="text-align:right;color:rgba(232,220,200,.5);font-size:12px;">${det.length} líneas</div>
-      </div>`:`
-      <div style="text-align:center;padding:20px;color:var(--tl);background:var(--cr);border-radius:10px;">
-        <i class="ti ti-table" style="font-size:28px;display:block;margin-bottom:6px;color:var(--bd);"></i>
-        Esta OC tiene ${c.lineas} líneas en el historial Excel.
-        <div class="total-box" style="margin-top:12px;">
-          <div>
-            <div style="color:rgba(232,220,200,.6);font-size:10px;text-transform:uppercase;">TOTAL FOB RMB</div>
-            <div style="color:var(--d);font-size:22px;font-weight:600;">${fR(c.totalFob)}</div>
-          </div>
-          <div style="color:rgba(232,220,200,.5);font-size:12px;">${c.lineas} líneas · ${fU(c.totalUsd)}</div>
-        </div>
-      </div>`}
-  </div>
-  <div class="modal-foot">
-    ${c.estado==='Stand By'?`
-      <button class="btn btn-ok btn-sm btn-apro-modal" data-id="${c.id}"><i class="ti ti-check"></i>Aprobar → Importación</button>
-      <button class="btn btn-reject btn-sm btn-recha-modal" data-id="${c.id}"><i class="ti ti-x"></i>Rechazar</button>`:''}
-    <button class="btn btn-out btn-sm btn-modal-close">Cerrar</button>
-  </div>`;
-}
-
-function modalProd(p){
-  const d=p||{};
-  const gs=['Equipos','Herramientas','Accesorios','Almacenamiento','Construcción','Agricultura','Seguridad','Otros'];
-  return `
-  <div class="modal-head">
-    <div><div class="modal-title">${d.id?'Editar':'Nuevo'} Producto</div></div>
-    <button class="modal-close"><i class="ti ti-x"></i></button>
-  </div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group"><label class="form-label">SKU *</label><input class="form-input" id="p-sku" value="${d.sku||''}"></div>
-      <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="p-nom" value="${d.n||''}"></div>
-      <div class="form-group"><label class="form-label">Grupo</label>
-        <select class="form-input" id="p-grp">${gs.map(g=>`<option value="${g}" ${d.g===g?'selected':''}>${g}</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">Precio RMB ¥</label><input class="form-input" id="p-rmb" type="number" value="${d.rmb||0}"></div>
-      <div class="form-group full"><label class="form-label">Descripción / Características</label>
-        <textarea class="form-input form-textarea" id="p-desc">${d.d||''}</textarea></div>
-      <div class="form-group"><label class="form-label">Subpartida Arancelaria</label><input class="form-input" id="p-sub" value="${d.sub||''}"></div>
-    </div>
-    <div style="background:var(--dp);border-radius:10px;padding:13px;margin-top:12px;">
-      <div class="form-label" style="margin-bottom:8px;">Fotos del Producto (hasta 5)</div>
-      <div style="background:var(--cr);border:2px dashed var(--bd);border-radius:8px;padding:14px;text-align:center;cursor:pointer;" onclick="document.getElementById('fi-foto').click()">
-        <input type="file" id="fi-foto" accept="image/*" multiple style="display:none;">
-        <i class="ti ti-camera" style="font-size:26px;color:var(--tl);display:block;margin-bottom:5px;"></i>
-        <div style="font-size:12.5px;color:var(--tl);">Toca para subir fotos</div>
-      </div>
-      ${(d.fotos||[]).length>0?`
-        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;">
-          ${(d.fotos||[]).map((f,i)=>`
-            <div style="position:relative;">
-              <img src="${f}" style="width:54px;height:54px;border-radius:7px;object-fit:cover;" alt="foto">
-              <button onclick="delFoto(${d.id},${i})" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;border:none;background:#c0392b;color:#fff;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;">
-                <i class="ti ti-x" style="font-size:9px;"></i></button>
-            </div>`).join('')}
-        </div>`:''}
-    </div>
-    <input type="hidden" id="p-id" value="${d.id||''}">
-  </div>
-  <div class="modal-foot">
-    <button class="btn btn-out btn-sm btn-modal-close">Cancelar</button>
-    <button class="btn btn-gold btn-sm" id="btn-save-prod"><i class="ti ti-device-floppy"></i>Guardar</button>
-  </div>`;
-}
-
-// ─── ACTIONS ───
-function onAlSku(){
-  const sku=document.getElementById('al-sku').value;
-  const p=S.prods.find(x=>x.sku===sku);
-  const pv=document.getElementById('prod-preview');
-  if(p&&pv){
-    pv.style.display='flex';
-    const pf=document.getElementById('pp-foto');
-    if(pf){if(p.fotos?.length)pf.innerHTML=`<img src="${p.fotos[0]}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;" alt="">`;
-    else pf.innerHTML=`<i class="ti ti-package" style="font-size:20px;color:var(--vm);"></i>`;}
-    document.getElementById('pp-nom').textContent=p.n;
-    document.getElementById('pp-car').textContent=p.d||'';
-    const ap=document.getElementById('al-prod'),ar=document.getElementById('al-rmb'),ac=document.getElementById('al-car');
-    if(ap)ap.value=p.n;
-    if(ar&&p.rmb){ar.value=p.rmb;updTotal();}
-    if(ac&&p.d)ac.value=p.d;
-  }else if(pv)pv.style.display='none';
-}
-
-function updTotal(){
-  const q=+(document.getElementById('al-qty')?.value||0);
-  const r=+(document.getElementById('al-rmb')?.value||0);
-  const t=document.getElementById('al-total');
-  if(t)t.textContent='¥'+fN(q*r,0);
-}
-
-function saveLine(){
-  const sku=document.getElementById('al-sku')?.value||'';
-  const prod=document.getElementById('al-prod')?.value||'';
-  const caract=document.getElementById('al-car')?.value||'';
-  const qty=parseFloat(document.getElementById('al-qty')?.value)||0;
-  const un=document.getElementById('al-un')?.value||'PCS';
-  const rmb=parseFloat(document.getElementById('al-rmb')?.value)||0;
-  const aut=document.getElementById('al-aut')?.value||'';
-  if(!prod){toast('La descripción es obligatoria','error');return;}
-  if(!qty||qty<=0){toast('Cantidad inválida','error');return;}
-  if(!rmb||rmb<=0){toast('Precio RMB obligatorio','error');return;}
-  const po=S.prods.find(p=>p.sku===sku);
-  S.ncL.push({sku:sku==='nuevo'?'':sku,p:prod,d:caract,foto:po?.fotos?.[0]||'',qty,u:un,rmb,fob:qty*rmb,autorizacion:aut});
-  openModal(modalNewCot());
-  toast('Línea agregada');
-}
-
-function saveCot(){
-  const cliente=document.getElementById('nc-cliente')?.value||S.ncC;
-  const notas=document.getElementById('nc-notas')?.value||S.ncN;
-  if(S.ncL.length===0){toast('Agrega al menos un producto','error');return;}
-  const oc=nextOC();
-  S.cots.unshift({
-    id:Date.now(),oc,fv:'',ano:String(curYear()),fecha:todayISO(),
-    cliente,notas,estado:'Stand By',
-    totalFob:S.ncL.reduce((s,l)=>s+l.fob,0),totalUsd:0,
-    lineas:S.ncL.length,detalle:[...S.ncL]
-  });
-  closeModal();S.ncL=[];S.ncC='';S.ncN='';
-  saveData();renderSidebar();renderPage();
-  toast('Cotización '+oc+' guardada en Stand By ✓');
-}
-
-function saveProd(){
-  const sku=document.getElementById('p-sku')?.value||'';
-  const nom=document.getElementById('p-nom')?.value||'';
-  if(!sku||!nom){toast('SKU y Nombre son obligatorios','error');return;}
-  const id=document.getElementById('p-id')?.value;
-  const ex=id?S.prods.find(x=>x.id===+id):null;
-  const prod={
-    id:ex?.id||Date.now(),sku,n:nom,
-    g:document.getElementById('p-grp')?.value||'Otros',
-    rmb:parseFloat(document.getElementById('p-rmb')?.value)||0,
-    d:document.getElementById('p-desc')?.value||'',
-    sub:document.getElementById('p-sub')?.value||'',
-    apro:'Aprobado',fotos:ex?.fotos||[]
-  };
-  if(ex){const i=S.prods.findIndex(x=>x.id===ex.id);if(i>=0)S.prods[i]=prod;}
-  else S.prods.unshift(prod);
-  closeModal();saveData();renderSidebar();renderPage();
-  toast(ex?'Producto actualizado':'Producto creado ✓');
-}
-
-function addFoto(input){
-  const id=document.getElementById('p-id')?.value;
-  const p=id?S.prods.find(x=>x.id===+id):null;
-  const target=p||(S.prods.find(x=>x.sku===document.getElementById('p-sku')?.value)||null);
-  Array.from(input.files||[]).forEach(f=>{
-    if(!target){toast('Guarda el producto primero','warn');return;}
-    if((target.fotos||[]).length>=5){toast('Máximo 5 fotos','warn');return;}
-    const r=new FileReader();
-    r.onload=e=>{
-      if(!target.fotos)target.fotos=[];
-      target.fotos.push(e.target.result);
-      if(p){const i=S.prods.findIndex(x=>x.id===p.id);if(i>=0)S.prods[i]=target;}
-      saveData();openModal(modalProd(target));
-    };r.readAsDataURL(f);
-  });
-}
-
-function delFoto(prodId,idx){
-  const p=S.prods.find(x=>x.id===prodId);
-  if(p?.fotos){p.fotos.splice(idx,1);saveData();openModal(modalProd(p));}
-}
-
-// ─── PDF EXPORT ───
-function exportPDF(id){
-  const c=S.cots.find(x=>x.id===id);if(!c)return;
-  const det=(c.detalle||[]).filter(l=>(l.p||l.producto)&&(l.qty>0||l.fob>0));
-  const total=det.reduce((s,l)=>s+(l.fob||l.total_fob||0),0)||c.totalFob;
-  const w=window.open('','_blank');
-  if(!w){toast('Habilita pop-ups en el navegador','warn');return;}
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>OC ${c.oc} - Montana Equipments</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:system-ui,sans-serif;font-size:12px;color:#1a1a1a;}
-    .hdr{background:#1a3a2e;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
-    .brand{color:#e8dcc8;font-size:16px;font-weight:600;}
-    .sub{color:#c9a227;font-size:9px;letter-spacing:2px;text-transform:uppercase;}
-    .oc-badge{background:#c9a227;color:#1a3a2e;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;}
-    .strip{background:#f5e9c0;border:1px solid #2d5c47;border-radius:9px;display:flex;margin:14px 24px 0;}
-    .sc{flex:1;padding:9px 14px;border-right:1px solid rgba(45,92,71,.2);}
-    .sc:last-child{border-right:none;}
-    .sl{font-size:9px;font-weight:600;color:#2d5c47;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-    .sv{font-size:16px;font-weight:600;color:#1a3a2e;}
-    .nota{background:#fff8e1;border:0.5px solid #c77700;border-radius:8px;padding:9px 14px;font-size:11px;color:#6d4c00;margin:12px 24px;}
-    .sec{margin:12px 24px;}
-    .sec-t{font-size:9px;font-weight:600;color:#c9a227;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;padding-bottom:6px;border-bottom:1px solid #f5e9c0;}
-    table{width:100%;border-collapse:collapse;}
-    th{background:#1a3a2e;color:#c9a227;font-size:9px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;padding:8px 10px;text-align:left;}
-    td{padding:7px 10px;border-bottom:0.5px solid rgba(26,58,46,.08);}
-    tr:nth-child(even)td{background:#faf7f0;}
-    .sku{background:#1a3a2e;color:#c9a227;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600;}
-    .tbox{background:#1a3a2e;border-radius:9px;padding:13px 18px;margin:12px 24px;display:flex;justify-content:space-between;align-items:center;}
-    .tl{color:rgba(232,220,200,.6);font-size:10px;text-transform:uppercase;margin-bottom:3px;}
-    .tv{color:#c9a227;font-size:22px;font-weight:600;}
-    .info{margin:14px 24px;border:0.5px solid #e8dcc8;border-radius:8px;padding:13px;display:flex;gap:24px;}
-    .ftr{margin:16px 24px;padding-top:10px;border-top:0.5px solid #e8dcc8;display:flex;justify-content:space-between;font-size:10px;color:#7a7a7a;}
-    @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-  </style></head><body>
-  <div class="hdr">
-    <div><div class="brand">Montana Equipments</div><div class="sub">GZ PIANT OPTICS CO.,LTD</div></div>
-    <div class="oc-badge">PURCHASE ORDER · ${c.oc}</div>
-  </div>
-  <div class="strip">
-    <div class="sc"><div class="sl">OC #</div><div class="sv">${c.oc}</div></div>
-    <div class="sc"><div class="sl">Fact. de Venta</div><div class="sv">${c.fv||'—'}</div></div>
-    <div class="sc"><div class="sl">Año</div><div class="sv">${c.ano}</div></div>
-    <div class="sc"><div class="sl">Fecha</div><div class="sv" style="font-size:14px;padding-top:3px;">${c.fecha||'—'}</div></div>
-    <div class="sc"><div class="sl">Estado</div><div class="sv" style="font-size:13px;padding-top:3px;color:${c.estado==='Stand By'?'#e65100':c.estado==='Completada'?'#27ae60':'#1a3a2e'}">${c.estado}</div></div>
-  </div>
-  ${c.cliente?`<div class="sec"><div class="sec-t">Cliente / Destinatario</div><div style="font-size:13px;font-weight:500;">${c.cliente}</div></div>`:''}
-  ${c.notas?`<div class="nota">📝 ${c.notas}</div>`:''}
-  <div class="sec">
-    <div class="sec-t">Líneas de Producto · ${det.length||c.lineas} items</div>
-    ${det.length?`
-    <table>
-      <thead><tr>
-        <th>SKU</th><th>Descripción del Producto</th><th>Características / Color</th>
-        <th style="text-align:right">QTY</th><th>Unid.</th>
-        <th style="text-align:right">Precio RMB</th><th style="text-align:right">Total FOB</th>
-      </tr></thead>
-      <tbody>${det.map(l=>`<tr>
-        <td>${(l.sku||l.s)?`<span class="sku">${l.sku||l.s}</span>`:'—'}</td>
-        <td><b>${l.p||l.producto}</b></td>
-        <td style="font-size:10.5px;color:#4a4a4a;max-width:150px;">${l.d||l.descripcion||'—'}</td>
-        <td style="text-align:right;font-weight:600;">${(l.qty||0).toLocaleString()}</td>
-        <td>${l.u||l.unidad||'PCS'}</td>
-        <td style="text-align:right;">¥${fN(l.rmb||l.precio_rmb||0,2)}</td>
-        <td style="text-align:right;font-weight:600;">¥${fN(l.fob||l.total_fob||0,0)}</td>
-      </tr>`).join('')}</tbody>
-    </table>`:`<div style="background:#faf7f0;padding:14px;border-radius:7px;text-align:center;font-size:11px;color:#7a7a7a;">Ver detalle completo en Excel GENERAL MOEQ 2025</div>`}
-  </div>
-  <div class="tbox">
-    <div><div class="tl">TOTAL ORDER</div><div class="tv">¥${fN(total,0)}</div></div>
-    <div style="text-align:right;color:rgba(232,220,200,.5);font-size:11px;">${c.lineas} líneas · ${c.totalUsd>0?fU(c.totalUsd):'—'}</div>
-  </div>
-  <div class="info">
-    <div style="flex:1;">
-      <div style="font-size:9px;color:#7a7a7a;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Empresa Proveedora</div>
-      <div style="font-weight:600;font-size:12px;">GZ PIANT OPTICS CO.,LTD</div>
-      <div style="font-size:10px;color:#4a4a4a;margin-top:2px;">RM19C LOCKHART CTR 301-307 LOCKHART RD WAN CHAI HONG KONG</div>
-    </div>
-    <div style="flex:1;">
-      <div style="font-size:9px;color:#7a7a7a;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Cliente</div>
-      <div style="font-weight:600;font-size:12px;">SOLUCIONES Y SUMINISTROS AGRICOLAS S.A.S</div>
-      <div style="font-size:10px;color:#4a4a4a;margin-top:2px;">CARRERA 11 No 7E-61 barrio Kennedy, Colombia</div>
-    </div>
-  </div>
-  <div class="ftr">
-    <span>Montana Equipments · Sistema de Gestión v1.0</span>
-    <span>OC ${c.oc} · Generado ${new Date().toLocaleDateString('es-CO')}</span>
-  </div>
-  <script>setTimeout(()=>window.print(),500);<\/script>
-  </body></html>`);
-  w.document.close();
-  toast('PDF OC '+c.oc+' generado ✓');
-}
-
-// ─── INIT ───
-document.getElementById('btn-login').onclick=doLogin;
-document.getElementById('le').onkeydown=e=>{if(e.key==='Enter')doLogin();};
-document.getElementById('lp').onkeydown=e=>{if(e.key==='Enter')doLogin();};
-document.getElementById('qa').onclick=()=>quickLogin('admin');
-document.getElementById('qb').onclick=()=>quickLogin('bodega');
-document.getElementById('qc').onclick=()=>quickLogin('proveedor');
-document.getElementById('btn-logout').onclick=doLogout;
-</script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>
