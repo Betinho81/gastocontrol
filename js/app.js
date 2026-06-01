@@ -133,10 +133,20 @@ function renderWizard() {
     const pv = provs.find(p => p.id === wData.provId) || {};
     body.innerHTML = `
       <div class="prov-info-card"><strong>${pv.razon_social}</strong>NIT: ${pv.nit}${pv.ciudad ? ' · ' + pv.ciudad : ''}</div>
-      <div class="form-row">
-        <div class="form-group"><label>Fecha de la factura</label><input type="date" id="wFecha" value="${new Date().toISOString().split('T')[0]}"></div>
-        <div class="form-group"><label>Valor ($)</label><input type="number" id="wValor" placeholder="0" min="0"></div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">📅</span>
+        <div>
+          <div style="font-size:11px;color:var(--text-sec);font-weight:500;text-transform:uppercase;letter-spacing:0.5px">Fecha y hora del registro</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)" id="wFechaDisplay"></div>
+        </div>
       </div>
+      <script>
+        (function(){
+          const now = new Date();
+          document.getElementById('wFechaDisplay').textContent = now.toLocaleString('es-CO', {dateStyle:'full',timeStyle:'short'});
+        })();
+      </script>
+      <div class="form-group"><label>Valor ($)</label><input type="number" id="wValor" placeholder="0" min="0"></div>
       <div class="form-group"><label>Descripción del gasto</label><textarea id="wDesc" placeholder="Describe el gasto realizado..."></textarea></div>
       <div class="form-group"><label>Foto de la factura</label>
         <div class="upload-area" onclick="document.getElementById('fileInput').click()">📷 Toca para subir foto de la factura</div>
@@ -164,7 +174,7 @@ window.gc.handlePhoto = function(e) {
 async function saveGasto() {
   const desc = document.getElementById('wDesc')?.value?.trim();
   const valor = parseFloat(document.getElementById('wValor')?.value) || 0;
-  const fecha = document.getElementById('wFecha')?.value;
+  const fecha = new Date().toISOString().split('T')[0];
   if (!desc || valor <= 0) { alert('Completa descripción y valor'); return; }
   document.getElementById('wizBtnNext').disabled = true; document.getElementById('wizBtnNext').textContent = 'Guardando...';
   let foto_url = null;
@@ -279,19 +289,37 @@ window.gc.openProvModal = function(id) {
   catSel.innerHTML = '<option value="">Seleccionar...</option>' + cats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
   if (id) {
     const p = provs.find(x => x.id === id);
-    document.getElementById('pNit').value = p.nit; document.getElementById('pRs').value = p.razon_social;
+    const nitParts = (p.nit || '').split('-');
+    document.getElementById('pNit').value = nitParts[0] || p.nit;
+    document.getElementById('pDv').value = nitParts[1] || '';
+    document.getElementById('pRs').value = p.razon_social;
     document.getElementById('pNombre').value = p.nombre_comercial || ''; document.getElementById('pDir').value = p.direccion || '';
     document.getElementById('pCiudad').value = p.ciudad || ''; document.getElementById('pCorreo').value = p.correo || '';
     document.getElementById('pTel').value = p.telefono || ''; catSel.value = p.categoria_id || '';
-  } else { ['pNit','pRs','pNombre','pDir','pCiudad','pCorreo','pTel'].forEach(id => document.getElementById(id).value = ''); catSel.value = ''; }
+  } else { ['pNit','pDv','pRs','pNombre','pDir','pCiudad','pCorreo','pTel'].forEach(id => document.getElementById(id).value = ''); catSel.value = ''; }
   document.getElementById('provErr').style.display = 'none';
   document.getElementById('provOverlay').classList.remove('hidden');
 };
 window.gc.editProv = id => window.gc.openProvModal(id);
 window.gc.closeProvModal = () => document.getElementById('provOverlay').classList.add('hidden');
 window.gc.saveProv = async function() {
-  const nit = document.getElementById('pNit').value.trim(); const rs = document.getElementById('pRs').value.trim();
-  if (!nit || !rs) { document.getElementById('provErr').style.display = 'block'; return; }
+  const nitBase = document.getElementById('pNit').value.trim();
+  const dv = document.getElementById('pDv').value.trim();
+  const nit = dv ? nitBase + '-' + dv : nitBase;
+  const rs = document.getElementById('pRs').value.trim();
+  const errEl = document.getElementById('provErr');
+  if (!nitBase || !rs) { errEl.textContent = 'Completa NIT y razón social'; errEl.style.display = 'block'; return; }
+
+  // Verificar NIT duplicado (solo al crear, no al editar)
+  if (!editProvId) {
+    const existe = provs.find(p => p.nit && p.nit.split('-')[0] === nitBase);
+    if (existe) {
+      errEl.textContent = '⚠️ Ya existe un proveedor con este NIT: ' + (existe.nombre_comercial || existe.razon_social);
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
   const obj = { nit, razon_social: rs, nombre_comercial: document.getElementById('pNombre').value.trim() || rs,
     direccion: document.getElementById('pDir').value.trim(), ciudad: document.getElementById('pCiudad').value.trim(),
     correo: document.getElementById('pCorreo').value.trim(), telefono: document.getElementById('pTel').value.trim(),
