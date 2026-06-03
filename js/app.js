@@ -34,6 +34,7 @@ async function init() {
   cats = c.data || []; subs = s.data || []; provs = p.data || [];
   gastos = g.data || []; sedes = sd.data || []; productos = pr.data || [];
   renderGastos(); renderMetrics();
+  initFiltrosGastos();
   if (esAdmin) initFiltros();
 }
 init();
@@ -77,10 +78,11 @@ function renderMetrics() {
     <div class="metric-card"><div class="m-label">Categorías</div><div class="m-value">${[...new Set(gastos.map(g => g.categoria_id))].length}</div></div>`;
 }
 
-function renderGastos() {
+function renderGastos(data) {
+  data = data || gastos;
   const tb = document.getElementById('gastosTable');
-  if (!gastos.length) { tb.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📋</div><p>No hay gastos registrados aún</p></div></td></tr>'; return; }
-  tb.innerHTML = gastos.map(g => {
+  if (!data.length) { tb.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📋</div><p>No hay gastos para mostrar</p></div></td></tr>'; return; }
+  tb.innerHTML = data.map(g => {
     const cat = g.categorias?.nombre || ''; const pv = g.proveedores || {};
     const fechaReg = g.fecha_registro ? new Date(g.fecha_registro).toLocaleDateString('es-CO') : g.fecha || '';
     const fechaFac = g.fecha_factura || '—';
@@ -96,6 +98,67 @@ function renderGastos() {
       <td><span class="lock-badge">🔒</span></td>
     </tr>`;
   }).join('');
+}
+
+// ── FILTROS GASTOS ───────────────────────────────────────────
+window.gc.filtrarHoy = function() {
+  const hoy = new Date().toLocaleDateString('es-CO');
+  const filtrados = gastos.filter(g => {
+    const fechaReg = g.fecha_registro ? new Date(g.fecha_registro).toLocaleDateString('es-CO') : '';
+    return fechaReg === hoy;
+  });
+  renderGastos(filtrados);
+  document.getElementById('btnHoy').classList.add('btn-active');
+  document.getElementById('btnTodos').classList.remove('btn-active');
+  const count = document.getElementById('filtroCount');
+  if (count) count.textContent = `Mostrando ${filtrados.length} gastos de hoy`;
+};
+
+window.gc.filtrarTodos = function() {
+  renderGastos(gastos);
+  document.getElementById('btnHoy').classList.remove('btn-active');
+  document.getElementById('btnTodos').classList.add('btn-active');
+  const count = document.getElementById('filtroCount');
+  if (count) count.textContent = '';
+  // Limpiar filtros
+  ['gfCat','gfSub','gfProv','gfDesde','gfHasta'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+};
+
+window.gc.aplicarFiltrosGastos = function() {
+  const cat = document.getElementById('gfCat')?.value;
+  const sub = document.getElementById('gfSub')?.value;
+  const prov = document.getElementById('gfProv')?.value;
+  const desde = document.getElementById('gfDesde')?.value;
+  const hasta = document.getElementById('gfHasta')?.value;
+  const filtrados = gastos.filter(g => {
+    if (cat && g.categoria_id !== cat) return false;
+    if (sub && g.subcategoria_id !== sub) return false;
+    if (prov && g.proveedor_id !== prov) return false;
+    if (desde && (g.fecha_factura||g.fecha||'') < desde) return false;
+    if (hasta && (g.fecha_factura||g.fecha||'') > hasta) return false;
+    return true;
+  });
+  renderGastos(filtrados);
+  const count = document.getElementById('filtroCount');
+  if (count) count.textContent = `Mostrando ${filtrados.length} de ${gastos.length} gastos`;
+};
+
+window.gc.limpiarFiltrosGastos = function() {
+  ['gfCat','gfSub','gfProv','gfDesde','gfHasta'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  renderGastos(gastos);
+  document.getElementById('btnHoy').classList.remove('btn-active');
+  document.getElementById('btnTodos').classList.add('btn-active');
+  const count = document.getElementById('filtroCount');
+  if (count) count.textContent = '';
+};
+
+function initFiltrosGastos() {
+  const catEl = document.getElementById('gfCat'); if(!catEl) return;
+  catEl.innerHTML = '<option value="">Todas</option>' + cats.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  const subEl = document.getElementById('gfSub');
+  subEl.innerHTML = '<option value="">Todas</option>' + subs.map(s=>`<option value="${s.id}">${s.nombre}</option>`).join('');
+  const provEl = document.getElementById('gfProv');
+  provEl.innerHTML = '<option value="">Todos</option>' + [...provs].sort((a,b)=>(a.nombre_comercial||a.razon_social).localeCompare(b.nombre_comercial||b.razon_social)).map(p=>`<option value="${p.id}">${p.nombre_comercial||p.razon_social}</option>`).join('');
 }
 
 // ── WIZARD ───────────────────────────────────────────────────
