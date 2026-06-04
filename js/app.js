@@ -265,9 +265,9 @@ function renderItems() {
     return `
     <div class="item-row" id="item_${item.id}" style="display:grid;grid-template-columns:30px 1fr 60px 60px 100px 100px 100px 30px;gap:6px;align-items:center;margin-bottom:8px;font-size:12px">
       <div style="text-align:center;color:var(--text-sec);font-weight:600">${idx+1}</div>
-      <select onchange="window.gc.updateItem(${item.id},'prodId',this.value,this.options[this.selectedIndex].text)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
+      <select onchange="window.gc.updateItemProd(${item.id},this.value,this.options[this.selectedIndex].text,this.options[this.selectedIndex].getAttribute('data-iva'))" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
         <option value="">Seleccionar...</option>
-        ${productos.map(p => `<option value="${p.id}" ${item.prodId===p.id?'selected':''}>${p.nombre}</option>`).join('')}
+        ${productos.map(p => `<option value="${p.id}" data-iva="${p.iva_pct||0}" ${item.prodId===p.id?'selected':''}>${p.nombre}</option>`).join('')}
       </select>
       <input type="number" min="1" value="${item.cantidad||1}" oninput="window.gc.updateItem(${item.id},'cantidad',this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:center">
       <select onchange="window.gc.updateItemIva(${item.id},this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
@@ -371,6 +371,19 @@ window.gc.updateItem = function(id, field, value, label) {
   if (!item) return;
   item[field] = value;
   if (field === 'prodId') item.prodNombre = label || '';
+  calcTotal();
+};
+
+window.gc.updateItemProd = function(id, prodId, prodNombre, ivaVal) {
+  const item = wItems.find(i => i.id === id);
+  if (!item) return;
+  item.prodId = prodId;
+  item.prodNombre = prodNombre || '';
+  if (ivaVal !== null && ivaVal !== undefined) {
+    item.iva = parseFloat(ivaVal) || 0;
+  }
+  const container = document.getElementById('itemsContainer');
+  if (container) container.innerHTML = renderItems();
   calcTotal();
 };
 
@@ -690,6 +703,15 @@ window.gc.openProdModal = function(id) {
       <div class="modal-hdr"><h3>${id?'Editar':'Nuevo'} producto</h3><button class="btn-close" onclick="document.getElementById('prodOverlay').remove()">×</button></div>
       <div class="modal-body">
         <div class="form-group"><label>Nombre del producto *</label><input id="prNombre" placeholder="Ej: Café" value="${prod?.nombre||''}"></div>
+        <div class="form-group"><label>IVA por defecto</label>
+          <select id="prIva">
+            <option value="0" ${(prod?.iva_pct||0)==0?'selected':''}>0% — Exento</option>
+            <option value="5" ${(prod?.iva_pct||0)==5?'selected':''}>5%</option>
+            <option value="8" ${(prod?.iva_pct||0)==8?'selected':''}>8%</option>
+            <option value="19" ${(prod?.iva_pct||0)==19?'selected':''}>19%</option>
+          </select>
+          <div style="font-size:11px;color:var(--text-sec);margin-top:4px">Al seleccionar este producto en una factura el IVA se llenará automáticamente</div>
+        </div>
         ${id ? `<div class="form-group"><label>Estado</label><select id="prActivo"><option value="true" ${prod?.activo?'selected':''}>Activo</option><option value="false" ${!prod?.activo?'selected':''}>Inactivo</option></select></div>` : ''}
         <div id="prErr" style="color:var(--error);font-size:12px;margin-top:6px;display:none">Ingresa el nombre</div>
       </div>
@@ -705,11 +727,12 @@ window.gc.saveProd = async function() {
   const nombre = document.getElementById('prNombre').value.trim();
   if (!nombre) { document.getElementById('prErr').style.display = 'block'; return; }
   const activo = document.getElementById('prActivo')?.value !== 'false';
+  const iva_pct = parseFloat(document.getElementById('prIva')?.value) || 0;
   if (editProdId) {
-    const { data } = await sb.from('productos').update({ nombre, activo }).eq('id', editProdId).select().single();
+    const { data } = await sb.from('productos').update({ nombre, activo, iva_pct }).eq('id', editProdId).select().single();
     if (data) { const idx = productos.findIndex(p => p.id === editProdId); productos[idx] = data; }
   } else {
-    const { data } = await sb.from('productos').insert({ nombre }).select().single();
+    const { data } = await sb.from('productos').insert({ nombre, iva_pct }).select().single();
     if (data) productos.push(data);
   }
   document.getElementById('prodOverlay').remove(); renderAdmin();
