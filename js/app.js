@@ -248,39 +248,112 @@ function renderWizard() {
 }
 
 function renderItems() {
-  return wItems.map((item, idx) => `
-    <div class="item-row" id="item_${item.id}" style="display:grid;grid-template-columns:30px 1fr 70px 90px 70px 70px 30px;gap:6px;align-items:center;margin-bottom:8px;font-size:12px">
+  return `
+    <div style="display:grid;grid-template-columns:30px 1fr 60px 60px 100px 100px 100px 30px;gap:6px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--text-sec);font-weight:500">
+      <div>#</div><div>Producto</div><div style="text-align:center">Cant</div><div style="text-align:center">IVA</div>
+      <div style="text-align:right">Precio base</div><div style="text-align:right">IVA $</div><div style="text-align:right">Total</div><div></div>
+    </div>` +
+  wItems.map((item, idx) => {
+    const cant = parseFloat(item.cantidad)||1;
+    const iva = parseFloat(item.iva)||0;
+    const base = parseFloat(item.precio)||0;
+    const total = parseFloat(item.totalManual)||0;
+    const ivaVal = base > 0 ? base * cant * iva / 100 : 0;
+    const totalCalc = base > 0 ? base * cant * (1 + iva/100) : total;
+    const baseCalc = total > 0 && base === 0 ? total / cant / (1 + iva/100) : base;
+    const ivaValCalc = total > 0 && base === 0 ? total - (total/(1+iva/100)) : ivaVal;
+    return `
+    <div class="item-row" id="item_${item.id}" style="display:grid;grid-template-columns:30px 1fr 60px 60px 100px 100px 100px 30px;gap:6px;align-items:center;margin-bottom:8px;font-size:12px">
       <div style="text-align:center;color:var(--text-sec);font-weight:600">${idx+1}</div>
       <select onchange="window.gc.updateItem(${item.id},'prodId',this.value,this.options[this.selectedIndex].text)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
         <option value="">Seleccionar...</option>
         ${productos.map(p => `<option value="${p.id}" ${item.prodId===p.id?'selected':''}>${p.nombre}</option>`).join('')}
       </select>
-      <input type="number" min="1" value="${item.cantidad}" onchange="window.gc.updateItem(${item.id},'cantidad',this.value)" placeholder="Cant" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:center">
-      <input type="number" min="0" value="${item.precio||''}" onchange="window.gc.updateItem(${item.id},'precio',this.value)" placeholder="Precio" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:right">
-      <select onchange="window.gc.updateItem(${item.id},'iva',this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
+      <input type="number" min="1" value="${item.cantidad||1}" oninput="window.gc.updateItem(${item.id},'cantidad',this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:center">
+      <select onchange="window.gc.updateItemIva(${item.id},this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
         ${IVA_OPTS.map(v => `<option value="${v}" ${item.iva==v?'selected':''}>${v}%</option>`).join('')}
       </select>
-      <div id="tot_${item.id}" style="text-align:right;font-weight:600;color:var(--text)">$${calcItemTotal(item).toLocaleString('es-CO')}</div>
+      <input type="number" min="0" id="base_${item.id}" value="${base>0?base:''}" 
+        oninput="window.gc.updateBase(${item.id},this.value)" 
+        placeholder="Base"
+        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:right;background:${item.totalManual&&!item.precio?'#f0f9ff':''}">
+      <div id="iva_${item.id}" style="padding:6px;text-align:right;font-size:12px;color:var(--text-sec)">
+        $${(item.precio>0?ivaVal:ivaValCalc).toLocaleString('es-CO',{maximumFractionDigits:0})}
+      </div>
+      <input type="number" min="0" id="totinput_${item.id}" value="${total>0&&!item.precio?total:''}"
+        oninput="window.gc.updateTotal(${item.id},this.value)"
+        placeholder="Total"
+        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:right;font-weight:600;background:${item.precio?'#f0f9ff':''}">
       ${wItems.length > 1 ? `<button onclick="window.gc.removeItem(${item.id})" style="background:none;border:none;cursor:pointer;color:var(--error);font-size:16px;padding:0">×</button>` : '<div></div>'}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function calcItemTotal(item) {
-  const cant = parseFloat(item.cantidad) || 0;
-  const precio = parseFloat(item.precio) || 0;
+  const cant = parseFloat(item.cantidad) || 1;
   const iva = parseFloat(item.iva) || 0;
-  return cant * precio * (1 + iva / 100);
+  if (item.precio > 0) {
+    return cant * parseFloat(item.precio) * (1 + iva / 100);
+  } else if (item.totalManual > 0) {
+    return parseFloat(item.totalManual);
+  }
+  return 0;
 }
 
 function calcTotal() {
   const total = wItems.reduce((s, item) => s + calcItemTotal(item), 0);
   const el = document.getElementById('totalDisplay');
-  if (el) el.textContent = '$' + total.toLocaleString('es-CO');
-  return total;
+  if (el) el.textContent = '$' + Math.round(total).toLocaleString('es-CO');
+  return Math.round(total);
 }
 
+function refreshItem(id) {
+  const container = document.getElementById('itemsContainer');
+  if (container) container.innerHTML = renderItems();
+  calcTotal();
+}
+
+window.gc.updateItemIva = function(id, value) {
+  const item = wItems.find(i => i.id === id);
+  if (!item) return;
+  item.iva = parseFloat(value) || 0;
+  refreshItem(id);
+};
+
+window.gc.updateBase = function(id, value) {
+  const item = wItems.find(i => i.id === id);
+  if (!item) return;
+  item.precio = parseFloat(value) || 0;
+  item.totalManual = 0; // base tiene prioridad
+  // Actualizar campo total visualmente
+  const cant = parseFloat(item.cantidad) || 1;
+  const iva = parseFloat(item.iva) || 0;
+  const total = item.precio * cant * (1 + iva / 100);
+  const totEl = document.getElementById('totinput_' + id);
+  if (totEl && item.precio > 0) totEl.value = Math.round(total);
+  const ivaEl = document.getElementById('iva_' + id);
+  if (ivaEl) ivaEl.textContent = '$' + Math.round(item.precio * cant * iva / 100).toLocaleString('es-CO');
+  calcTotal();
+};
+
+window.gc.updateTotal = function(id, value) {
+  const item = wItems.find(i => i.id === id);
+  if (!item) return;
+  item.totalManual = parseFloat(value) || 0;
+  item.precio = 0; // total tiene prioridad
+  // Calcular base visualmente
+  const cant = parseFloat(item.cantidad) || 1;
+  const iva = parseFloat(item.iva) || 0;
+  const base = item.totalManual / cant / (1 + iva / 100);
+  const baseEl = document.getElementById('base_' + id);
+  if (baseEl && item.totalManual > 0) baseEl.value = Math.round(base);
+  const ivaEl = document.getElementById('iva_' + id);
+  if (ivaEl) ivaEl.textContent = '$' + Math.round(item.totalManual - (item.totalManual / (1 + iva/100))).toLocaleString('es-CO');
+  calcTotal();
+};
+
 window.gc.addItem = function() {
-  wItems.push({ id: Date.now(), prodId: '', prodNombre: '', cantidad: 1, precio: 0, iva: 0 });
+  wItems.push({ id: Date.now(), prodId: '', prodNombre: '', cantidad: 1, precio: 0, iva: 0, totalManual: 0 });
   const container = document.getElementById('itemsContainer');
   if (container) container.innerHTML = renderItems();
   calcTotal();
@@ -298,8 +371,6 @@ window.gc.updateItem = function(id, field, value, label) {
   if (!item) return;
   item[field] = value;
   if (field === 'prodId') item.prodNombre = label || '';
-  const totEl = document.getElementById('tot_' + id);
-  if (totEl) totEl.textContent = '$' + calcItemTotal(item).toLocaleString('es-CO');
   calcTotal();
 };
 
