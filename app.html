@@ -1,1 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GastoControl</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --azul: #1A5276; --azul-med: #2E86C1; --azul-clar: #EBF5FB;
+      --verde: #1a7a4a; --verde-clar: #e8f5ee;
+      --text: #1a1a2e; --text-sec: #6b7280; --text-ter: #9ca3af;
+      --borde: #e5e7eb; --bg: #f8fafc; --blanco: #ffffff;
+      --error: #dc2626; --error-bg: #fef2f2;
+      --radio: 10px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    .hidden { display: none !important; }
 
+    /* NAV */
+    .topnav { background: var(--blanco); border-bottom: 1px solid var(--borde); height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-logo { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+    .sede-chip { background: var(--azul-clar); color: var(--azul); font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .user-name { font-size: 13px; color: var(--text-sec); }
+    .btn-logout { background: none; border: 1px solid var(--borde); border-radius: 8px; padding: 5px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; color: var(--text-sec); }
+    .btn-logout:hover { background: var(--bg); }
+
+    /* TABS */
+    .tabs { background: var(--blanco); border-bottom: 1px solid var(--borde); display: flex; padding: 0 1.5rem; gap: 2px; overflow-x: auto; flex-shrink: 0; }
+    .tab { padding: 14px 16px; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-sec); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color .15s; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--azul); border-bottom-color: var(--azul); }
+
+    /* CONTENT */
+    .content { flex: 1; padding: 1.5rem; overflow-y: auto; max-width: 1200px; width: 100%; margin: 0 auto; }
+
+    /* METRIC CARDS */
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .metric-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); padding: 1rem 1.25rem; }
+    .metric-card .m-label { font-size: 11px; color: var(--text-sec); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .metric-card .m-value { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+    .metric-card .m-sub { font-size: 11px; color: var(--text-ter); margin-top: 3px; }
+
+    /* SECTION HEADER */
+    .sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+    .sec-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .btn-new { background: var(--azul); color: #fff; border: none; border-radius: var(--radio); padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s; }
+    .btn-new:hover { background: #154360; }
+    .btn-outline { background: var(--blanco); color: var(--text); border: 1px solid var(--borde); border-radius: var(--radio); padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .btn-outline:hover { background: var(--bg); }
+
+    /* TABLE */
+    .table-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+    thead { background: var(--bg); }
+    th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg); }
+    .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+    .b-aseo { background: #dcfce7; color: #166534; }
+    .b-papeleria { background: #dbeafe; color: #1e40af; }
+    .b-cafeteria { background: #fef9c3; color: #854d0e; }
+    .b-seguridad { background: #fee2e2; color: #991b1b; }
+    .b-mantenimiento { background: #ede9fe; color: #4c1d95; }
+    .b-gasolina { background: #ffedd5; color: #9a3412; }
+    .b-servicios { background: #d1fae5; color: #065f46; }
+    .b-insumos { background: #fce7f3; color: #831843; }
+    .b-nominas { background: #f1f5f9; color: #334155; }
+    .foto-thumb { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borde); cursor: pointer; }
+    .lock-badge { font-size: 11px; color: var(--text-ter); display: flex; align-items: center; gap: 3px; }
+    .empty-state { text-align: center; padding: 3rem; color: var(--text-sec); }
+    .empty-state .empty-icon { font-size: 36px; margin-bottom: 0.75rem; }
+
+    /* FILTER PANEL */
+    .filter-panel { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .filter-title { font-size: 12px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+    .filter-group label { display: block; font-size: 11px; color: var(--text-sec); margin-bottom: 4px; font-weight: 500; }
+    .filter-group select, .filter-group input { width: 100%; padding: 7px 10px; border: 1px solid var(--borde); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--blanco); outline: none; }
+    .filter-group select:focus, .filter-group input:focus { border-color: var(--azul-med); }
+    .filter-actions { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; }
+
+    /* BAR CHART */
+    .chart-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .chart-title { font-size: 13px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 1rem; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    .bar-label { width: 130px; color: var(--text-sec); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+    .bar-track { flex: 1; background: var(--bg); border-radius: 4px; height: 20px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 10px; color: #fff; font-weight: 600; transition: width .6s ease; }
+    .bar-val { width: 90px; text-align: right; font-weight: 600; font-size: 11px; font-family: 'DM Mono', monospace; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media(max-width:640px) { .charts-row { grid-template-columns: 1fr; } }
+
+    /* WIZARD MODAL */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+    .modal { background: var(--blanco); border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .modal-hdr { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--borde); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--blanco); z-index: 1; }
+    .modal-hdr h3 { font-size: 16px; font-weight: 600; }
+    .btn-close { background: none; border: none; cursor: pointer; font-size: 22px; color: var(--text-sec); line-height: 1; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+    .btn-close:hover { background: var(--bg); }
+    .wiz-steps { display: flex; padding: 1rem 1.5rem; border-bottom: 1px solid var(--borde); }
+    .wiz-step { flex: 1; text-align: center; font-size: 11px; color: var(--text-ter); }
+    .wiz-step.active { color: var(--azul); font-weight: 600; }
+    .wiz-step.done { color: var(--verde); }
+    .wiz-num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--borde); display: flex; align-items: center; justify-content: center; margin: 0 auto 4px; font-size: 11px; }
+    .wiz-step.active .wiz-num { background: var(--azul); border-color: var(--azul); color: #fff; }
+    .wiz-step.done .wiz-num { background: var(--verde); border-color: var(--verde); color: #fff; }
+    .modal-body { padding: 1.5rem; }
+    .modal-ftr { padding: 1rem 1.5rem; border-top: 1px solid var(--borde); display: flex; justify-content: space-between; gap: 8px; position: sticky; bottom: 0; background: var(--blanco); }
+    .btn-sec { background: none; border: 1px solid var(--borde); border-radius: var(--radio); padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; color: var(--text); }
+    .btn-sec:hover { background: var(--bg); }
+    .btn-prim { background: var(--azul); color: #fff; border: none; border-radius: var(--radio); padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s; }
+    .btn-prim:hover { background: #154360; }
+    .btn-prim:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* OPTION GRID */
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .opt-btn { background: var(--bg); border: 1.5px solid var(--borde); border-radius: var(--radio); padding: 12px; cursor: pointer; text-align: left; transition: border-color .15s, background .15s; }
+    .opt-btn:hover { border-color: var(--azul-med); background: var(--azul-clar); }
+    .opt-btn.sel { border-color: var(--azul); background: var(--azul-clar); }
+    .opt-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .opt-sub { font-size: 11px; color: var(--text-sec); margin-top: 3px; }
+    .prov-opt { background: var(--bg); border: 1.5px solid var(--borde); border-radius: var(--radio); padding: 12px; cursor: pointer; margin-bottom: 8px; transition: border-color .15s; }
+    .prov-opt:hover { border-color: var(--azul-med); }
+    .prov-opt.sel { border-color: var(--azul); background: var(--azul-clar); }
+    .prov-opt .pn { font-weight: 600; font-size: 13px; }
+    .prov-opt .ps { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
+
+    /* FORM */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--borde); border-radius: var(--radio);
+      font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--blanco); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--azul-med); box-shadow: 0 0 0 3px rgba(46,134,193,0.1); }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .upload-area { border: 2px dashed var(--borde); border-radius: var(--radio); padding: 1.5rem; text-align: center; cursor: pointer; color: var(--text-sec); font-size: 13px; transition: border-color .15s, color .15s; }
+    .upload-area:hover { border-color: var(--azul-med); color: var(--azul); }
+    .upload-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; margin-top: 10px; border: 1px solid var(--borde); }
+    .info-note { background: var(--azul-clar); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--azul); margin-top: 1rem; display: flex; gap: 8px; align-items: flex-start; }
+    .prov-info-card { background: var(--bg); border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; font-size: 12px; }
+    .prov-info-card strong { font-size: 13px; display: block; margin-bottom: 3px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(26,82,118,0.2); border-top-color: var(--azul); border-radius: 50%; animation: spin .7s linear infinite; margin: 2rem auto; display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { text-align: center; color: var(--text-sec); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="nav-left">
+    <span style="font-size:20px">💰</span>
+    <span class="nav-logo">GastoControl</span>
+    <span class="sede-chip" id="sedeChip"></span>
+  </div>
+  <div class="nav-right">
+    <span class="user-name" id="userName"></span>
+    <button class="btn-logout" onclick="window.gc.logout()">Salir</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" id="tabGastos" onclick="showTab('gastos',this)">Mis gastos</button>
+  <button class="tab hidden" id="tabReportes" onclick="showTab('reportes',this)">Reportes</button>
+  <button class="tab hidden" id="tabProveedores" onclick="showTab('proveedores',this)">Proveedores</button>
+  <button class="tab hidden" id="tabAdmin" onclick="showTab('admin',this)">Administrador</button>
+</div>
+
+<!-- GASTOS -->
+<div class="content" id="panelGastos">
+  <div class="sec-header">
+    <span class="sec-title">Registro de gastos</span>
+    <button class="btn-new" onclick="window.gc.openWizard()">+ Nuevo gasto</button>
+  </div>
+  <div class="metric-grid" id="metricCards"></div>
+  <div style="background:var(--blanco);border:1px solid var(--borde);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap">
+      <button id="btnTodos" onclick="window.gc.filtrarTodos()" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--azul);background:var(--azul);color:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s">Todos</button>
+      <button id="btnHoy" onclick="window.gc.filtrarHoy()" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--borde);background:none;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s">📅 Hoy</button>
+      <span id="filtroCount" style="font-size:12px;color:var(--text-sec);margin-left:4px"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+      <div><label style="font-size:11px;color:var(--text-sec);display:block;margin-bottom:3px">Categoría</label>
+        <select id="gfCat" onchange="window.gc.aplicarFiltrosGastos()" style="width:100%;padding:6px 10px;border:1px solid var(--borde);border-radius:8px;font-size:13px;background:var(--blanco)"><option value="">Todas</option></select></div>
+      <div><label style="font-size:11px;color:var(--text-sec);display:block;margin-bottom:3px">Subcategoría</label>
+        <select id="gfSub" onchange="window.gc.aplicarFiltrosGastos()" style="width:100%;padding:6px 10px;border:1px solid var(--borde);border-radius:8px;font-size:13px;background:var(--blanco)"><option value="">Todas</option></select></div>
+      <div><label style="font-size:11px;color:var(--text-sec);display:block;margin-bottom:3px">Proveedor</label>
+        <select id="gfProv" onchange="window.gc.aplicarFiltrosGastos()" style="width:100%;padding:6px 10px;border:1px solid var(--borde);border-radius:8px;font-size:13px;background:var(--blanco)"><option value="">Todos</option></select></div>
+      <div><label style="font-size:11px;color:var(--text-sec);display:block;margin-bottom:3px">Desde</label>
+        <input type="date" id="gfDesde" onchange="window.gc.aplicarFiltrosGastos()" style="width:100%;padding:6px 10px;border:1px solid var(--borde);border-radius:8px;font-size:13px"></div>
+      <div><label style="font-size:11px;color:var(--text-sec);display:block;margin-bottom:3px">Hasta</label>
+        <input type="date" id="gfHasta" onchange="window.gc.aplicarFiltrosGastos()" style="width:100%;padding:6px 10px;border:1px solid var(--borde);border-radius:8px;font-size:13px"></div>
+      <div style="display:flex;align-items:flex-end">
+        <button onclick="window.gc.limpiarFiltrosGastos()" style="width:100%;padding:7px;border:1px solid var(--borde);border-radius:8px;background:none;font-size:13px;cursor:pointer;color:var(--text-sec)">Limpiar</button>
+      </div>
+    </div>
+  </div>
+  <div class="table-card">
+    <table><thead><tr>
+      <th>Fecha</th><th>Categoría</th><th>Subcategoría</th><th>Proveedor</th><th>NIT</th><th>Descripción</th><th>Valor</th><th>Foto</th><th></th>
+    </tr></thead><tbody id="gastosTable"></tbody></table>
+  </div>
+</div>
+
+<!-- REPORTES -->
+<div class="content hidden" id="panelReportes">
+  <div class="sec-header">
+    <span class="sec-title">Reportes</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn-outline" onclick="window.gc.exportCSV()">↓ CSV</button>
+      <button class="btn-new" onclick="window.gc.exportExcel()">↓ Excel</button>
+    </div>
+  </div>
+  <div class="filter-panel">
+    <div class="filter-title">Filtros</div>
+    <div class="filter-grid">
+      <div class="filter-group"><label>Sede</label>
+        <select id="fSede" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Categoría</label>
+        <select id="fCat" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Subcategoría</label>
+        <select id="fSub" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Proveedor</label>
+        <select id="fProv" onchange="window.gc.applyFilters()"><option value="">Todos</option></select></div>
+      <div class="filter-group"><label>Desde</label>
+        <input type="date" id="fDesde" onchange="window.gc.applyFilters()"></div>
+      <div class="filter-group"><label>Hasta</label>
+        <input type="date" id="fHasta" onchange="window.gc.applyFilters()"></div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-sec" onclick="window.gc.limpiarFiltros()">Limpiar</button>
+    </div>
+  </div>
+  <div class="metric-grid" id="rMetrics"></div>
+  <div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Por categoría</div><div id="chartCat"></div></div>
+    <div class="chart-card"><div class="chart-title">Por sede</div><div id="chartSede"></div></div>
+  </div>
+  <div class="chart-card"><div class="chart-title">Por proveedor (top 5)</div><div id="chartProv"></div></div>
+  <div class="table-card" style="margin-top:1rem">
+    <table><thead><tr>
+      <th>Fecha</th><th>Sede</th><th>Categoría</th><th>Subcategoría</th><th>Proveedor</th><th>NIT</th><th>Razón social</th><th>Descripción</th><th>Valor</th><th>Foto</th>
+    </tr></thead><tbody id="reporteTable"></tbody></table>
+  </div>
+</div>
+
+<!-- PROVEEDORES -->
+<div class="content hidden" id="panelProveedores">
+  <div class="sec-header">
+    <span class="sec-title">Proveedores</span>
+    <button class="btn-new" onclick="window.gc.openProvModal()">+ Nuevo proveedor</button>
+  </div>
+  <div id="provTable"></div>
+</div>
+
+<!-- ADMIN -->
+<div class="content hidden" id="panelAdmin">
+  <div class="sec-header"><span class="sec-title">Administrador</span></div>
+  <div class="charts-row">
+    <div class="chart-card"><div class="chart-title">Usuarios</div><div id="adminUsers"></div></div>
+    <div class="chart-card"><div class="chart-title">Productos</div><div id="adminSedes"></div></div>
+  </div>
+  <div class="chart-card" style="margin-bottom:1rem"><div class="chart-title">Categorías y subcategorías</div><div id="adminCats"></div></div>
+  <div class="chart-card"><div class="chart-title">Gastos por categoría (global)</div><div id="adminChart"></div></div>
+</div>
+
+<!-- WIZARD -->
+<div class="overlay hidden" id="wizardOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Nuevo gasto</h3>
+      <button class="btn-close" onclick="window.gc.closeWizard()">×</button>
+    </div>
+    <div class="wiz-steps" id="wizSteps"></div>
+    <div class="modal-body" id="wizBody"></div>
+    <div class="modal-ftr">
+      <button class="btn-sec" id="wizBtnBack" onclick="window.gc.wizBack()">Atrás</button>
+      <button class="btn-prim" id="wizBtnNext" onclick="window.gc.wizNext()">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROVEEDOR MODAL -->
+<div class="overlay hidden" id="provOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="provModalTitle">Nuevo proveedor</h3>
+      <button class="btn-close" onclick="window.gc.closeProvModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>NIT *</label>
+          <input id="pNit" placeholder="900123456" onblur="window.gc.checkNitDuplicado()">
+          <div id="nitAlert" style="display:none;background:#fef9c3;border:1px solid #fde68a;color:#854d0e;font-size:12px;padding:6px 10px;border-radius:6px;margin-top:4px"></div>
+        </div>
+        <div class="form-group"><label>Razón social *</label><input id="pRs" placeholder="Empresa S.A.S."></div>
+      </div>
+      <div class="form-group"><label>Nombre comercial</label><input id="pNombre" placeholder="Como opera comercialmente"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Dirección</label><input id="pDir" placeholder="Calle 10 # 5-20"></div>
+        <div class="form-group"><label>Ciudad</label><input id="pCiudad" placeholder="Pereira"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Correo</label><input id="pCorreo" type="email" placeholder="info@empresa.com"></div>
+        <div class="form-group"><label>Teléfono</label><input id="pTel" placeholder="3001234567"></div>
+      </div>
+      <div class="form-group"><label>Categoría principal</label>
+        <select id="pCat"><option value="">Seleccionar...</option></select></div>
+      <div id="provErr" style="color:var(--error);font-size:12px;margin-top:8px;display:none">Completa NIT y razón social</div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-sec" onclick="window.gc.closeProvModal()">Cancelar</button>
+      <button class="btn-prim" onclick="window.gc.saveProv()">Guardar proveedor</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none" onchange="window.gc.handlePhoto(event)">
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
