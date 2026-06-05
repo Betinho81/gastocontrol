@@ -249,9 +249,9 @@ function renderWizard() {
 
 function renderItems() {
   return `
-    <div style="display:grid;grid-template-columns:30px 1fr 60px 60px 100px 100px 100px 30px;gap:6px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--text-sec);font-weight:500">
-      <div>#</div><div>Producto</div><div style="text-align:center">Cant</div><div style="text-align:center">IVA</div>
-      <div style="text-align:right">Precio base</div><div style="text-align:right">IVA $</div><div style="text-align:right">Total</div><div></div>
+    <div style="display:grid;grid-template-columns:30px 1fr 55px 55px 55px 90px 80px 90px 30px;gap:6px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--text-sec);font-weight:500">
+      <div>#</div><div>Producto</div><div style="text-align:center">Cant</div><div style="text-align:center">IVA</div><div style="text-align:center">I.C.</div>
+      <div style="text-align:right">Precio base</div><div style="text-align:right">Imp $</div><div style="text-align:right">Total</div><div></div>
     </div>` +
   wItems.map((item, idx) => {
     const cant = parseFloat(item.cantidad)||1;
@@ -263,15 +263,21 @@ function renderItems() {
     const baseCalc = total > 0 && base === 0 ? total / cant / (1 + iva/100) : base;
     const ivaValCalc = total > 0 && base === 0 ? total - (total/(1+iva/100)) : ivaVal;
     return `
-    <div class="item-row" id="item_${item.id}" style="display:grid;grid-template-columns:30px 1fr 60px 60px 100px 100px 100px 30px;gap:6px;align-items:center;margin-bottom:8px;font-size:12px">
+    <div class="item-row" id="item_${item.id}" style="display:grid;grid-template-columns:30px 1fr 55px 55px 55px 90px 80px 90px 30px;gap:6px;align-items:center;margin-bottom:8px;font-size:12px">
       <div style="text-align:center;color:var(--text-sec);font-weight:600">${idx+1}</div>
-      <select onchange="window.gc.updateItemProd(${item.id},this.value,this.options[this.selectedIndex].text,this.options[this.selectedIndex].getAttribute('data-iva'))" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
+      <select onchange="window.gc.updateItemProd(${item.id},this.value,this.options[this.selectedIndex].text,this.options[this.selectedIndex].getAttribute('data-iva'),this.options[this.selectedIndex].getAttribute('data-ic'))" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
         <option value="">Seleccionar...</option>
-        ${productos.map(p => `<option value="${p.id}" data-iva="${p.iva_pct||0}" ${item.prodId===p.id?'selected':''}>${p.nombre}</option>`).join('')}
+        ${productos.map(p => `<option value="${p.id}" data-iva="${p.iva_pct||0}" data-ic="${p.imp_consumo_pct||0}" ${item.prodId===p.id?'selected':''}>${p.nombre}</option>`).join('')}
       </select>
       <input type="number" min="1" value="${item.cantidad||1}" oninput="window.gc.updateItem(${item.id},'cantidad',this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:center">
       <select onchange="window.gc.updateItemIva(${item.id},this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
         ${IVA_OPTS.map(v => `<option value="${v}" ${item.iva==v?'selected':''}>${v}%</option>`).join('')}
+      </select>
+      <select onchange="window.gc.updateItemIc(${item.id},this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
+        <option value="0" ${(item.ic||0)==0?'selected':''}>0%</option>
+        <option value="4" ${(item.ic||0)==4?'selected':''}>4%</option>
+        <option value="8" ${(item.ic||0)==8?'selected':''}>8%</option>
+        <option value="16" ${(item.ic||0)==16?'selected':''}>16%</option>
       </select>
       <input type="number" min="0" id="base_${item.id}" value="${base>0?base:''}" 
         oninput="window.gc.updateBase(${item.id},this.value)" 
@@ -292,8 +298,10 @@ function renderItems() {
 function calcItemTotal(item) {
   const cant = parseFloat(item.cantidad) || 1;
   const iva = parseFloat(item.iva) || 0;
+  const ic = parseFloat(item.ic) || 0;
+  const taxRate = 1 + (iva + ic) / 100;
   if (item.precio > 0) {
-    return cant * parseFloat(item.precio) * (1 + iva / 100);
+    return cant * parseFloat(item.precio) * taxRate;
   } else if (item.totalManual > 0) {
     return parseFloat(item.totalManual);
   }
@@ -312,6 +320,13 @@ function refreshItem(id) {
   if (container) container.innerHTML = renderItems();
   calcTotal();
 }
+
+window.gc.updateItemIc = function(id, value) {
+  const item = wItems.find(i => i.id === id);
+  if (!item) return;
+  item.ic = parseFloat(value) || 0;
+  refreshItem(id);
+};
 
 window.gc.updateItemIva = function(id, value) {
   const item = wItems.find(i => i.id === id);
@@ -374,13 +389,16 @@ window.gc.updateItem = function(id, field, value, label) {
   calcTotal();
 };
 
-window.gc.updateItemProd = function(id, prodId, prodNombre, ivaVal) {
+window.gc.updateItemProd = function(id, prodId, prodNombre, ivaVal, icVal) {
   const item = wItems.find(i => i.id === id);
   if (!item) return;
   item.prodId = prodId;
   item.prodNombre = prodNombre || '';
   if (ivaVal !== null && ivaVal !== undefined) {
     item.iva = parseFloat(ivaVal) || 0;
+  }
+  if (icVal !== null && icVal !== undefined) {
+    item.ic = parseFloat(icVal) || 0;
   }
   const container = document.getElementById('itemsContainer');
   if (container) container.innerHTML = renderItems();
@@ -681,10 +699,11 @@ async function renderAdmin() {
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
       <button class="btn-new" onclick="window.gc.openProdModal()">+ Nuevo producto</button>
     </div>
-    <div class="table-card"><table><thead><tr><th>Producto</th><th style="text-align:center">IVA</th><th>Estado</th><th></th></tr></thead><tbody>
+    <div class="table-card"><table><thead><tr><th>Producto</th><th style="text-align:center">IVA</th><th style="text-align:center">Imp. Consumo</th><th>Estado</th><th></th></tr></thead><tbody>
     ${productos.map(p => `<tr>
       <td style="font-weight:500">${p.nombre}</td>
       <td style="text-align:center"><span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:#EBF5FB;color:#1A5276">${p.iva_pct||0}%</span></td>
+      <td style="text-align:center"><span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:${(p.imp_consumo_pct||0)>0?'#FEF9E7':'#F8F9FA'};color:${(p.imp_consumo_pct||0)>0?'#7D6608':'#9CA3AF'}">${p.imp_consumo_pct||0}%</span></td>
       <td><span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${p.activo?'#dcfce7':'#fee2e2'};color:${p.activo?'#166534':'#991b1b'}">${p.activo?'Activo':'Inactivo'}</span></td>
       <td><button class="btn-sec" style="padding:4px 10px;font-size:12px" onclick="window.gc.editProd('${p.id}')">Editar</button></td>
     </tr>`).join('')}
@@ -704,15 +723,27 @@ window.gc.openProdModal = function(id) {
       <div class="modal-hdr"><h3>${id?'Editar':'Nuevo'} producto</h3><button class="btn-close" onclick="document.getElementById('prodOverlay').remove()">×</button></div>
       <div class="modal-body">
         <div class="form-group"><label>Nombre del producto *</label><input id="prNombre" placeholder="Ej: Café" value="${prod?.nombre||''}"></div>
-        <div class="form-group"><label>IVA * <span style="font-size:11px;color:var(--text-sec)">(obligatorio)</span></label>
-          <select id="prIva" style="border-color:${prod?.iva_pct!==undefined?'var(--borde)':'#fca5a5'}">
-            ${id ? '' : '<option value="">Seleccionar IVA...</option>'}
-            <option value="0" ${prod?.iva_pct===0?'selected':''}>0% — Exento</option>
-            <option value="5" ${prod?.iva_pct===5?'selected':''}>5%</option>
-            <option value="8" ${prod?.iva_pct===8?'selected':''}>8%</option>
-            <option value="19" ${prod?.iva_pct===19?'selected':''}>19%</option>
-          </select>
-          <div style="font-size:11px;color:var(--text-sec);margin-top:4px">Al seleccionar este producto en una factura el IVA se llenará automáticamente</div>
+        <div class="form-row">
+          <div class="form-group"><label>IVA * <span style="font-size:11px;color:var(--text-sec)">(obligatorio)</span></label>
+            <select id="prIva">
+              ${id ? '' : '<option value="">Seleccionar...</option>'}
+              <option value="0" ${prod?.iva_pct===0?'selected':''}>0% — Exento</option>
+              <option value="5" ${prod?.iva_pct===5?'selected':''}>5%</option>
+              <option value="8" ${prod?.iva_pct===8?'selected':''}>8%</option>
+              <option value="19" ${prod?.iva_pct===19?'selected':''}>19%</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Imp. Consumo</label>
+            <select id="prImpConsumo">
+              <option value="0" ${(prod?.imp_consumo_pct||0)===0?'selected':''}>0% — No aplica</option>
+              <option value="4" ${(prod?.imp_consumo_pct||0)===4?'selected':''}>4% — Telefonía</option>
+              <option value="8" ${(prod?.imp_consumo_pct||0)===8?'selected':''}>8% — Restaurantes</option>
+              <option value="16" ${(prod?.imp_consumo_pct||0)===16?'selected':''}>16% — Vehículos</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-sec);margin-bottom:1rem;padding:8px 12px;background:var(--bg);border-radius:8px">
+          💡 En Colombia IVA e Impuesto al Consumo son excluyentes — un producto aplica uno u otro, no los dos.
         </div>
         ${id ? `<div class="form-group"><label>Estado</label><select id="prActivo"><option value="true" ${prod?.activo?'selected':''}>Activo</option><option value="false" ${!prod?.activo?'selected':''}>Inactivo</option></select></div>` : ''}
         <div id="prErr" style="color:var(--error);font-size:12px;margin-top:6px;display:none">Ingresa el nombre</div>
@@ -733,11 +764,12 @@ window.gc.saveProd = async function() {
   if (!ivaEl || ivaEl.value === '') { errEl.textContent = 'Selecciona el IVA del producto'; errEl.style.display = 'block'; return; }
   const activo = document.getElementById('prActivo')?.value !== 'false';
   const iva_pct = parseFloat(ivaEl.value);
+  const imp_consumo_pct = parseFloat(document.getElementById('prImpConsumo')?.value) || 0;
   if (editProdId) {
-    const { data } = await sb.from('productos').update({ nombre, activo, iva_pct }).eq('id', editProdId).select().single();
+    const { data } = await sb.from('productos').update({ nombre, activo, iva_pct, imp_consumo_pct }).eq('id', editProdId).select().single();
     if (data) { const idx = productos.findIndex(p => p.id === editProdId); productos[idx] = data; }
   } else {
-    const { data } = await sb.from('productos').insert({ nombre, iva_pct }).select().single();
+    const { data } = await sb.from('productos').insert({ nombre, iva_pct, imp_consumo_pct }).select().single();
     if (data) productos.push(data);
   }
   document.getElementById('prodOverlay').remove(); renderAdmin();
