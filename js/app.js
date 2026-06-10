@@ -491,9 +491,14 @@ async function saveGasto() {
 // ── REPORTES ─────────────────────────────────────────────────
 async function initFiltros() {
   const sedeEl = document.getElementById('fSede'); if (!sedeEl) return;
-  sedeEl.innerHTML = '<option value="">Todas las sedes</option>';
   const sedesDisp = esAdmin ? sedes : sedes.filter(s => s.id === user.sedePropiaId);
-  sedesDisp.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = s.nombre; sedeEl.appendChild(o); });
+  // Checkboxes multi-sede
+  sedeEl.innerHTML = sedesDisp.map(s =>
+    `<label style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap">
+      <input type="checkbox" class="sede-chk" value="${s.id}" style="accent-color:var(--azul);width:15px;height:15px">
+      ${s.nombre}
+    </label>`
+  ).join('');
   const catEl = document.getElementById('fCat'); catEl.innerHTML = '<option value="">Todas</option>';
   cats.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.nombre; catEl.appendChild(o); });
   const subEl = document.getElementById('fSub'); subEl.innerHTML = '<option value="">Todas</option>';
@@ -505,7 +510,11 @@ async function initFiltros() {
 async function getFiltered() {
   let q = sb.from('gastos').select(`*, categorias(nombre), subcategorias(nombre), proveedores(nit,razon_social,nombre_comercial,direccion,correo), sedes(nombre)`);
   if (esGestion) { q = q.eq('sede_id', user.sedePropiaId); }
-  else { const vs = document.getElementById('fSede')?.value; if (vs) q = q.eq('sede_id', vs); }
+  else {
+    const sedesCheck = [...document.querySelectorAll('.sede-chk:checked')].map(c => c.value);
+    if (sedesCheck.length === 1) q = q.eq('sede_id', sedesCheck[0]);
+    else if (sedesCheck.length > 1) q = q.in('sede_id', sedesCheck);
+  }
   const vc = document.getElementById('fCat')?.value;
   const vsu = document.getElementById('fSub')?.value;
   const vp = document.getElementById('fProv')?.value;
@@ -656,7 +665,8 @@ window.gc.exportContable = async function() {
 };
 
 window.gc.limpiarFiltros = function() {
-  ['fSede','fCat','fSub','fProv'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.querySelectorAll('.sede-chk').forEach(c => c.checked = false);
+  ['fCat','fSub','fProv'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['fDesde','fHasta'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   window.gc.applyFilters();
 };
