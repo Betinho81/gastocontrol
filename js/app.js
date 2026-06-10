@@ -1,8 +1,6 @@
 import { sb, getUser, logout, requireAuth } from './supabase.js';
 
 const user = requireAuth();
-if (!user) { window.location.href = 'index.html'; }
-else {
 document.getElementById('sedeChip').textContent = user.sedeNombre;
 document.getElementById('userName').textContent = user.nombre;
 
@@ -724,9 +722,9 @@ window.gc.exportContable = async function() {
   }
 
   // Generar CSV con el formato exacto de la plantilla
-  const SEP = '\t';
-  const header = ['prefijo','tipodoc','documento','año','mes','dia','cedula','cuenta','concepto','debito','credito','valor_base','porcentaje','observacion','apellido1','apellido2','nombre1','nombre2','dirter','telter','codciu','cencos','razonsoc','pre_dcto','documento'].join(SEP);
-  const rows = filas.map(f => f.join(SEP)).join('\n');
+  const header = 'prefijo	tipodoc	documento	año	mes	dia	cedula	cuenta	concepto	debito	credito	valor_base	porcentaje	observacion	apellido1	apellido2	nombre1	nombre2	dirter	telter	codciu	cencos	razonsoc	pre_dcto	documento';
+  const rows = filas.map(f => f.join('	')).join('
+');
   const blob = new Blob([header + '
 ' + rows], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
@@ -735,7 +733,7 @@ window.gc.exportContable = async function() {
   a.click();
   
   // Mostrar resumen
-  alert('✅ Reporte contable generado: ' + filas.length + ' registros, ' + gastos.length + ' facturas');
+  alert(`✅ Reporte contable generado\n${filas.length} registros contables\n${gastos.length} facturas procesadas`);
 };
 
 window.gc.limpiarFiltros = function() {
@@ -1052,4 +1050,3 @@ window.gc.saveUser = async function() {
   if (error) { errEl.textContent = 'Error: ' + (error.message||'intenta de nuevo'); errEl.style.display = 'block'; return; }
   document.getElementById('userOverlay').remove(); renderAdmin();
 };
-}
