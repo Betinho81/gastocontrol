@@ -432,8 +432,8 @@ async function saveGasto() {
   const total = calcTotal();
 
   if (!fechaFac) { alert('Ingresa la fecha de la factura'); return; }
-  if (wItems.length === 0 || wItems.every(i => !i.precio || i.precio <= 0)) {
-    alert('Agrega al menos un ítem con precio'); return;
+  if (wItems.length === 0 || wItems.every(i => (!i.precio || i.precio <= 0) && (!i.totalManual || i.totalManual <= 0))) {
+    alert('Agrega al menos un ítem con precio o total'); return;
   }
 
   document.getElementById('wizBtnNext').disabled = true;
@@ -470,13 +470,14 @@ async function saveGasto() {
   }
 
   // Guardar items
-  const itemsToInsert = wItems.filter(i => i.precio > 0).map((item, idx) => ({
+  const itemsToInsert = wItems.filter(i => i.precio > 0 || i.totalManual > 0).map((item, idx) => ({
     gasto_id: gastoData.id,
     item_no: idx + 1,
     producto_id: item.prodId || null,
     producto_nombre: item.prodNombre || '',
     cantidad: parseFloat(item.cantidad) || 1,
     precio: parseFloat(item.precio) || 0,
+    precio_total: parseFloat(item.totalManual) || 0,
     iva_pct: parseFloat(item.iva) || 0
   }));
 
@@ -604,7 +605,13 @@ window.gc.exportContable = async function() {
     for (const item of items) {
       const cta = sub.cuenta_contable || '529595';
       const iva = parseFloat(item.iva_pct) || 0;
-      const base = Math.round(parseFloat(item.precio||0) * parseFloat(item.cantidad||1));
+      const cant = parseFloat(item.cantidad||1);
+      let base = 0;
+      if (parseFloat(item.precio||0) > 0) {
+        base = Math.round(parseFloat(item.precio) * cant);
+      } else if (parseFloat(item.precio_total||0) > 0) {
+        base = Math.round(parseFloat(item.precio_total) / (1 + iva/100));
+      }
       const key = cta + '_' + iva;
       if (!grupos[key]) grupos[key] = {cta, iva, base:0, ivaVal:0};
       grupos[key].base += base;
