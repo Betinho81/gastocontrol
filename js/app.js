@@ -1,7 +1,8 @@
 import { sb, getUser, logout, requireAuth } from './supabase.js';
 
 const user = requireAuth();
-if (!user) throw new Error('redirect');
+if (!user) { window.location.href = 'index.html'; }
+else {
 document.getElementById('sedeChip').textContent = user.sedeNombre;
 document.getElementById('userName').textContent = user.nombre;
 
@@ -1051,3 +1052,4 @@ window.gc.saveUser = async function() {
   if (error) { errEl.textContent = 'Error: ' + (error.message||'intenta de nuevo'); errEl.style.display = 'block'; return; }
   document.getElementById('userOverlay').remove(); renderAdmin();
 };
+}
