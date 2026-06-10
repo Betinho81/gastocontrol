@@ -1,6 +1,7 @@
 import { sb, getUser, logout, requireAuth } from './supabase.js';
 
 const user = requireAuth();
+if (!user) throw new Error('redirect');
 document.getElementById('sedeChip').textContent = user.sedeNombre;
 document.getElementById('userName').textContent = user.nombre;
 
