@@ -513,8 +513,8 @@ async function getFiltered() {
   if (vc) q = q.eq('categoria_id', vc);
   if (vsu) q = q.eq('subcategoria_id', vsu);
   if (vp) q = q.eq('proveedor_id', vp);
-  if (vd) q = q.gte('fecha_factura', vd);
-  if (vh) q = q.lte('fecha_factura', vh);
+  if (vd) q = q.or(`fecha_factura.gte.${vd},and(fecha_factura.is.null,fecha.gte.${vd})`);
+  if (vh) q = q.or(`fecha_factura.lte.${vh},and(fecha_factura.is.null,fecha.lte.${vh})`);
   const { data } = await q.order('fecha_registro', { ascending: false });
   return data || [];
 }
