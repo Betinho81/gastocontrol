@@ -722,9 +722,9 @@ window.gc.exportContable = async function() {
   }
 
   // Generar CSV con el formato exacto de la plantilla
-  const header = 'prefijo	tipodoc	documento	año	mes	dia	cedula	cuenta	concepto	debito	credito	valor_base	porcentaje	observacion	apellido1	apellido2	nombre1	nombre2	dirter	telter	codciu	cencos	razonsoc	pre_dcto	documento';
-  const rows = filas.map(f => f.join('	')).join('
-');
+  const SEP = '\t';
+  const header = ['prefijo','tipodoc','documento','año','mes','dia','cedula','cuenta','concepto','debito','credito','valor_base','porcentaje','observacion','apellido1','apellido2','nombre1','nombre2','dirter','telter','codciu','cencos','razonsoc','pre_dcto','documento'].join(SEP);
+  const rows = filas.map(f => f.join(SEP)).join('\n');
   const blob = new Blob([header + '
 ' + rows], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
@@ -733,7 +733,7 @@ window.gc.exportContable = async function() {
   a.click();
   
   // Mostrar resumen
-  alert(`✅ Reporte contable generado\n${filas.length} registros contables\n${gastos.length} facturas procesadas`);
+  alert('✅ Reporte contable generado: ' + filas.length + ' registros, ' + gastos.length + ' facturas');
 };
 
 window.gc.limpiarFiltros = function() {
