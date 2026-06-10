@@ -560,33 +560,29 @@ const CENCOS_MAP = {
 };
 
 // ── MOTOR CONTABLE ───────────────────────────────────────────
-window.gc.exportContable = async function() {
-  // Obtener gastos filtrados con todos los datos necesarios
-  let q = sb.from('gastos').select(`
-    *, 
-    categorias(nombre), 
-    subcategorias(nombre, cuenta_contable, cuenta_iva, cuenta_imp_consumo, cuenta_retencion, pct_retencion, base_retencion_compras, base_retencion_servicios),
-    proveedores(nit, razon_social, nombre_comercial, direccion, telefono, regimen_tributario, apellido1, apellido2, nombre1, nombre2),
-    sedes(nombre),
-    gasto_items(*)
-  `);
-  
-  // Aplicar filtros activos
-  if (esGestion) { q = q.eq('sede_id', user.sedePropiaId); }
-  else {
-    const vs = document.getElementById('fSede')?.value;
-    if (vs) q = q.eq('sede_id', vs);
-  }
-  const vd = document.getElementById('fDesde')?.value;
-  const vh = document.getElementById('fHasta')?.value;
-  if (vd) q = q.gte('fecha_factura', vd);
-  if (vh) q = q.lte('fecha_factura', vh);
-  
-  const { data: gastos } = await q.order('fecha_factura', { ascending: true });
-  if (!gastos || !gastos.length) { alert('No hay gastos para exportar con los filtros actuales'); return; }
 
+window.gc.exportContable = async function() {
+  const gastosBase = await getFiltered();
+  if (!gastosBase || !gastosBase.length) { alert('No hay gastos para exportar con los filtros actuales'); return; }
+
+  const ids = gastosBase.map(g => g.id);
+  const chunkSize = 50;
+  let gastos = [];
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize);
+    const { data } = await sb.from('gastos').select(`
+      *, categorias(nombre),
+      subcategorias(nombre, cuenta_contable, cuenta_iva, cuenta_retencion, pct_retencion, base_retencion_compras, base_retencion_servicios),
+      proveedores(nit, razon_social, nombre_comercial, direccion, telefono, regimen_tributario),
+      sedes(nombre), gasto_items(*)
+    `).in('id', chunk).order('fecha', { ascending: true });
+    if (data) gastos = gastos.concat(data);
+  }
+  if (!gastos.length) { alert('Error cargando datos contables'); return; }
+
+  const CENCOS = {'UMI PEREIRA':1,'VYS PEI':2,'PAL PEI':3,'ARM 2':5,'ARM3':9,'BQUILLA':6,'BMANGA':7,'CABECERA':8,'JAH':7,'ORM':7,'GAHR':7,'MAVIC':2,'AFHR':7,'VYS CARTAGO':4};
+  const CUENTA_CREDITO = '233595';
   const filas = [];
-  const CUENTA_CREDITO = '233595'; // Cuentas por pagar - OTROS
 
   for (const gasto of gastos) {
     const pv = gasto.proveedores || {};
@@ -595,145 +591,58 @@ window.gc.exportContable = async function() {
     const items = gasto.gasto_items || [];
     const nroFac = gasto.numero_factura || '';
     const fecha = gasto.fecha_factura || gasto.fecha || '';
-    const anio = fecha ? new Date(fecha).getFullYear() : 2026;
-    const mes = fecha ? new Date(fecha).getMonth() + 1 : 1;
-    const dia = fecha ? new Date(fecha).getDate() : 1;
+    const d = fecha ? new Date(fecha) : new Date();
     const nit = (pv.nit || '').replace(/[^0-9]/g, '');
-    const esPersonaNatural = pv.regimen_tributario === 'PERSONA_NATURAL';
-    const esSimple = pv.regimen_tributario === 'SIMPLE';
-    const cencos = CENCOS_MAP[sede] || 7;
-    const razonSoc = esPersonaNatural ? '0' : (pv.razon_social || '').trim();
-    const ap1 = esPersonaNatural ? (pv.apellido1 || '0') : '0';
-    const ap2 = esPersonaNatural ? (pv.apellido2 || '0') : '0';
-    const nom1 = esPersonaNatural ? (pv.nombre1 || '0') : '0';
-    const nom2 = esPersonaNatural ? (pv.nombre2 || '0') : '0';
+    const cencos = CENCOS[sede] || 7;
+    const razonSoc = (pv.razon_social || '').trim();
     const dir = (pv.direccion || '').trim() || '0';
     const tel = (pv.telefono || '').replace(/[^0-9]/g, '') || '0';
-    const obs = `FACT ${nroFac} ${(gasto.descripcion || '').toUpperCase()}`;
+    const obs = ('FACT ' + nroFac + ' ' + (gasto.descripcion || '')).toUpperCase().substring(0, 60);
+    const bf = ['','CPP',nroFac,d.getFullYear(),d.getMonth()+1,d.getDate(),nit,'','',0,0,0,0,obs,'0','0','0','0',dir,tel,'',cencos,razonSoc,'',nroFac];
 
-    // Construir fila base para este gasto
-    const base_fila = ['', 'CPP', nroFac, anio, mes, dia, nit, '', '', '', '', '', '', obs, ap1, ap2, nom1, nom2, dir, tel, '', cencos, razonSoc, '', nroFac];
-
-    // Agrupar items por cuenta contable y IVA
     const grupos = {};
     for (const item of items) {
-      const ctaCont = sub.cuenta_contable || '529595';
+      const cta = sub.cuenta_contable || '529595';
       const iva = parseFloat(item.iva_pct) || 0;
-      const ic = parseFloat(item.imp_consumo_pct || gasto.subcategorias?.imp_consumo_pct) || 0;
-      const base = Math.round(parseFloat(item.precio) * parseFloat(item.cantidad));
-      const ivaVal = Math.round(base * iva / 100);
-      const icVal = Math.round(base * ic / 100);
-      const key = `${ctaCont}_${iva}_${ic}`;
-      if (!grupos[key]) grupos[key] = { ctaCont, iva, ic, base: 0, ivaVal: 0, icVal: 0 };
+      const base = Math.round(parseFloat(item.precio||0) * parseFloat(item.cantidad||1));
+      const key = cta + '_' + iva;
+      if (!grupos[key]) grupos[key] = {cta, iva, base:0, ivaVal:0};
       grupos[key].base += base;
-      grupos[key].ivaVal += ivaVal;
-      grupos[key].icVal += icVal;
+      grupos[key].ivaVal += Math.round(base * iva / 100);
+    }
+    if (!items.length) {
+      grupos['default'] = {cta: sub.cuenta_contable||'529595', iva:0, base:Math.round(gasto.valor||0), ivaVal:0};
     }
 
-    // Si no hay items detallados, usar el valor total del gasto
-    if (items.length === 0) {
-      const ctaCont = sub.cuenta_contable || '529595';
-      grupos['default'] = { ctaCont, iva: 0, ic: 0, base: Math.round(gasto.valor), ivaVal: 0, icVal: 0 };
-    }
-
-    let totalDebitos = 0;
-    let totalCreditos = 0;
-
-    for (const grp of Object.values(grupos)) {
-      const esCombustible = grp.ctaCont === '52953501';
-      const pctRet = parseFloat(sub.pct_retencion) || 0;
-      const baseRet = esSimple ? 0 : (parseFloat(sub.base_retencion_compras) || 0);
-      const baseRetSrv = esSimple ? 0 : (parseFloat(sub.base_retencion_servicios) || 0);
-      const aplicaRet = sub.cuenta_retencion && pctRet > 0;
-      const valorBase = grp.base;
-      const valorIva = grp.ivaVal;
-      const valorIc = grp.icVal;
-
-      // FILA 1: Débito base del gasto
-      const f1 = [...base_fila];
-      f1[7] = grp.ctaCont;
-      f1[8] = `FACT ${nroFac} ${gasto.categorias?.nombre?.toUpperCase() || ''}`;
-      f1[9] = valorBase; // debito
-      f1[10] = 0; // credito
-      f1[11] = 0; f1[12] = 0;
-      filas.push(f1);
-      totalDebitos += valorBase;
-
-      // FILA 2: Débito IVA (si aplica)
-      if (valorIva > 0 && sub.cuenta_iva) {
-        const ctaIva = esSimple ? '236701' : sub.cuenta_iva;
-        const f2 = [...base_fila];
-        f2[7] = ctaIva;
-        f2[8] = `FACT ${nroFac} IVA DEL ${grp.iva}`;
-        f2[9] = valorIva; f2[10] = 0;
-        f2[11] = valorBase; f2[12] = grp.iva;
-        filas.push(f2);
-        totalDebitos += valorIva;
+    let totalDeb = 0, totalCred = 0;
+    for (const g of Object.values(grupos)) {
+      const f1 = [...bf]; f1[7]=g.cta; f1[8]='FACT '+nroFac+' GASTO'; f1[9]=g.base; f1[10]=0; filas.push(f1); totalDeb+=g.base;
+      if (g.ivaVal > 0 && sub.cuenta_iva) {
+        const f2=[...bf]; f2[7]=sub.cuenta_iva; f2[8]='FACT '+nroFac+' IVA'; f2[9]=g.ivaVal; f2[10]=0; f2[11]=g.base; f2[12]=g.iva; filas.push(f2); totalDeb+=g.ivaVal;
       }
-
-      // FILA 2b: Débito Impuesto al consumo (si aplica)
-      if (valorIc > 0) {
-        const f2b = [...base_fila];
-        f2b[7] = '52956001';
-        f2b[8] = `FACT ${nroFac} IMP CONSUMO ${grp.ic}%`;
-        f2b[9] = valorIc; f2b[10] = 0;
-        f2b[11] = 0; f2b[12] = grp.ic;
-        filas.push(f2b);
-        totalDebitos += valorIc;
-      }
-
-      // FILA retención (combustible o servicios con retención)
-      if (aplicaRet && !esSimple) {
-        const retVal = esCombustible ? Math.round(valorBase * pctRet / 100) : Math.round(valorBase * pctRet / 100);
-        const superaBase = esCombustible || 
-          (baseRet > 0 && valorBase >= baseRet) || 
-          (baseRetSrv > 0 && valorBase >= baseRetSrv);
-        
-        if (superaBase && retVal > 0) {
-          const fRet = [...base_fila];
-          fRet[7] = sub.cuenta_retencion;
-          fRet[8] = `FACT ${nroFac} RETENCION`;
-          fRet[9] = 0; fRet[10] = retVal;
-          fRet[11] = valorBase; fRet[12] = pctRet;
-          filas.push(fRet);
-          totalCreditos += retVal;
-
-          // Para combustible: agregar impuesto asumido
-          if (esCombustible) {
-            const fImpAsumido = [...base_fila];
-            fImpAsumido[7] = '53152002';
-            fImpAsumido[8] = `FACT ${nroFac} IMPUESTO ASUMIDO`;
-            fImpAsumido[9] = retVal; fImpAsumido[10] = 0;
-            fImpAsumido[11] = 0; fImpAsumido[12] = 0;
-            filas.push(fImpAsumido);
-            totalDebitos += retVal;
+      const pctRet = parseFloat(sub.pct_retencion)||0;
+      if (sub.cuenta_retencion && pctRet > 0 && pv.regimen_tributario !== 'SIMPLE') {
+        const retVal = Math.round(g.base * pctRet / 100);
+        if (retVal > 0) {
+          const fR=[...bf]; fR[7]=sub.cuenta_retencion; fR[8]='FACT '+nroFac+' RETEFTE'; fR[9]=0; fR[10]=retVal; fR[11]=g.base; fR[12]=pctRet; filas.push(fR); totalCred+=retVal;
+          if (g.cta === '52953501') {
+            const fI=[...bf]; fI[7]='53152002'; fI[8]='FACT '+nroFac+' IMP ASUMIDO'; fI[9]=retVal; fI[10]=0; filas.push(fI); totalDeb+=retVal;
           }
         }
       }
     }
-
-    // FILA FINAL: Crédito total (cuenta por pagar)
-    const totalFinal = totalDebitos - totalCreditos;
-    const fCred = [...base_fila];
-    fCred[7] = CUENTA_CREDITO;
-    fCred[8] = `FACT ${nroFac} CUENTA POR PAGAR`;
-    fCred[9] = 0; fCred[10] = totalFinal;
-    fCred[11] = 0; fCred[12] = 0;
-    filas.push(fCred);
+    const fC=[...bf]; fC[7]=CUENTA_CREDITO; fC[8]='FACT '+nroFac+' CXP'; fC[9]=0; fC[10]=totalDeb-totalCred; filas.push(fC);
   }
 
-  // Generar CSV con el formato exacto de la plantilla
   const SEP = '\t';
-  const header = ['prefijo','tipodoc','documento','anio','mes','dia','cedula','cuenta','concepto','debito','credito','valor_base','porcentaje','observacion','apellido1','apellido2','nombre1','nombre2','dirter','telter','codciu','cencos','razonsoc','pre_dcto','documento'].join(SEP);
+  const header = ['prefijo','tipodoc','documento','anio','mes','dia','cedula','cuenta','concepto','debito','credito','valor_base','porcentaje','observacion','apellido1','apellido2','nombre1','nombre2','dirter','telter','codciu','cencos','razonsoc','pre_dcto','nrodoc'].join(SEP);
   const rows = filas.map(f => f.join(SEP)).join('\n');
   const blob = new Blob([header + '\n' + rows], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'reporte_contable_' + new Date().toISOString().split('T')[0] + '.txt';
   a.click();
-  
-  // Mostrar resumen
-  alert('✅ Reporte contable generado: ' + filas.length + ' registros, ' + gastos.length + ' facturas');
+  alert('Reporte contable: ' + filas.length + ' registros de ' + gastos.length + ' facturas');
 };
 
 window.gc.limpiarFiltros = function() {
