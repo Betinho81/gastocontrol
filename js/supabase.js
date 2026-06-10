@@ -67,6 +67,9 @@ export function logout() {
 
 export function requireAuth() {
   const u = getUser();
-  if (!u) window.location.href = 'index.html';
+  if (!u) {
+    window.location.replace('index.html');
+    throw new Error('No autenticado');
+  }
   return u;
 }
