@@ -222,8 +222,9 @@
   <div class="filter-panel">
     <div class="filter-title">Filtros</div>
     <div class="filter-grid">
-      <div class="filter-group"><label>Sede</label>
-        <select id="fSede" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
+      <div class="filter-group" style="grid-column:1/-1"><label>Sedes (selecciona una o varias)</label>
+  <div id="fSede" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--borde);border-radius:8px;background:var(--blanco);min-height:38px"></div>
+</div>
       <div class="filter-group"><label>Categoría</label>
         <select id="fCat" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
       <div class="filter-group"><label>Subcategoría</label>
