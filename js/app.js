@@ -641,14 +641,17 @@ window.gc.exportContable = async function() {
     const fC=[...bf]; fC[7]=CUENTA_CREDITO; fC[8]='FACT '+nroFac+' CXP'; fC[9]=0; fC[10]=totalDeb-totalCred; filas.push(fC);
   }
 
-  const SEP = '\t';
-  const header = ['prefijo','tipodoc','documento','anio','mes','dia','cedula','cuenta','concepto','debito','credito','valor_base','porcentaje','observacion','apellido1','apellido2','nombre1','nombre2','dirter','telter','codciu','cencos','razonsoc','pre_dcto','nrodoc'].join(SEP);
-  const rows = filas.map(f => f.join(SEP)).join('\n');
-  const blob = new Blob([header + '\n' + rows], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'reporte_contable_' + new Date().toISOString().split('T')[0] + '.txt';
-  a.click();
+  // Generar Excel con SheetJS
+  const COLS = ['prefijo','tipodoc','documento','anio','mes','dia','cedula','cuenta','concepto','debito','credito','valor_base','porcentaje','observacion','apellido1','apellido2','nombre1','nombre2','dirter','telter','codciu','cencos','razonsoc','pre_dcto','nrodoc'];
+  const NUM_COLS = new Set([3,4,5,9,10,11,12]);
+  const wsData = [COLS, ...filas.map(f =>
+    f.map((v, i) => NUM_COLS.has(i) ? (Number(v)||0) : (v === null || v === undefined ? '' : String(v)))
+  )];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = [8,6,14,6,5,5,14,10,45,12,12,12,10,45,6,10,10,10,25,14,8,8,35,10,14].map(w => ({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws, 'Causacion');
+  XLSX.writeFile(wb, 'CAUSACION_SIIGO_' + new Date().toISOString().split('T')[0] + '.xlsx');
   alert('Reporte contable: ' + filas.length + ' registros de ' + gastos.length + ' facturas');
 };
 
