@@ -3513,48 +3513,58 @@ function renderWizard() {
 
 function renderItems() {
   return `
-    <div style="display:grid;grid-template-columns:30px 1fr 55px 55px 55px 90px 80px 90px 30px;gap:6px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--text-sec);font-weight:500">
-      <div>#</div><div>Producto</div><div style="text-align:center">Cant</div><div style="text-align:center">IVA</div><div style="text-align:center">I.C.</div>
-      <div style="text-align:right">Precio base</div><div style="text-align:right">Imp $</div><div style="text-align:right">Total</div><div></div>
+    <div style="display:grid;grid-template-columns:24px 1fr 55px 90px 90px 90px 24px;gap:6px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--text-sec);font-weight:500;padding:0 2px">
+      <div>#</div>
+      <div>Producto</div>
+      <div style="text-align:center">Cant</div>
+      <div style="text-align:right">Precio base</div>
+      <div style="text-align:right">Imp. cargo</div>
+      <div style="text-align:right">Total</div>
+      <div></div>
     </div>` +
   wItems.map((item, idx) => {
-    const cant = parseFloat(item.cantidad)||1;
-    const iva = parseFloat(item.iva)||0;
-    const base = parseFloat(item.precio)||0;
-    const total = parseFloat(item.totalManual)||0;
-    const ivaVal = base > 0 ? base * cant * iva / 100 : 0;
-    const totalCalc = base > 0 ? base * cant * (1 + iva/100) : total;
-    const baseCalc = total > 0 && base === 0 ? total / cant / (1 + iva/100) : base;
-    const ivaValCalc = total > 0 && base === 0 ? total - (total/(1+iva/100)) : ivaVal;
+    const cant = parseFloat(item.cantidad) || 1;
+    const iva = parseFloat(item.iva) || 0;
+    const ic = parseFloat(item.ic) || 0;
+    const taxRate = 1 + (iva + ic) / 100;
+    const base = parseFloat(item.precio) || 0;
+    const totalManual = parseFloat(item.totalManual) || 0;
+    const impVal = base > 0
+      ? Math.round(base * cant * (iva + ic) / 100)
+      : (totalManual > 0 ? Math.round(totalManual - totalManual / taxRate) : 0);
+    const totalCalc = base > 0 ? Math.round(base * cant * taxRate) : totalManual;
+    const tieneProd = !!item.prodId;
+    const impLabel = iva > 0 && ic > 0
+      ? `IVA ${iva}% + IC ${ic}%`
+      : iva > 0 ? `IVA ${iva}%`
+      : ic > 0 ? `I.Consumo ${ic}%`
+      : '0%';
     return `
-    <div class="item-row" id="item_${item.id}" style="display:grid;grid-template-columns:30px 1fr 55px 55px 55px 90px 80px 90px 30px;gap:6px;align-items:center;margin-bottom:8px;font-size:12px">
-      <div style="text-align:center;color:var(--text-sec);font-weight:600">${idx+1}</div>
-      <select onchange="window.gc.updateItemProd(${item.id},this.value,this.options[this.selectedIndex].text,this.options[this.selectedIndex].getAttribute('data-iva'),this.options[this.selectedIndex].getAttribute('data-ic'))" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
-        <option value="">Seleccionar...</option>
+    <div style="display:grid;grid-template-columns:24px 1fr 55px 90px 90px 90px 24px;gap:6px;align-items:center;margin-bottom:8px;padding:8px;background:var(--bg);border-radius:8px;font-size:12px">
+      <div style="text-align:center;color:var(--text-sec);font-weight:600;font-size:11px">${idx+1}</div>
+      <select onchange="window.gc.updateItemProd(${item.id},this.value,this.options[this.selectedIndex].text,this.options[this.selectedIndex].getAttribute('data-iva'),this.options[this.selectedIndex].getAttribute('data-ic'))"
+        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;background:var(--blanco)">
+        <option value="">— Seleccionar producto —</option>
         ${productos.map(p => `<option value="${p.id}" data-iva="${p.iva_pct||0}" data-ic="${p.imp_consumo_pct||0}" ${item.prodId===p.id?'selected':''}>${p.nombre}</option>`).join('')}
       </select>
-      <input type="number" min="1" value="${item.cantidad||1}" oninput="window.gc.updateItem(${item.id},'cantidad',this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:center">
-      <select onchange="window.gc.updateItemIva(${item.id},this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
-        ${IVA_OPTS.map(v => `<option value="${v}" ${item.iva==v?'selected':''}>${v}%</option>`).join('')}
-      </select>
-      <select onchange="window.gc.updateItemIc(${item.id},this.value)" style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%">
-        <option value="0" ${(item.ic||0)==0?'selected':''}>0%</option>
-        <option value="4" ${(item.ic||0)==4?'selected':''}>4%</option>
-        <option value="8" ${(item.ic||0)==8?'selected':''}>8%</option>
-        <option value="16" ${(item.ic||0)==16?'selected':''}>16%</option>
-      </select>
-      <input type="number" min="0" id="base_${item.id}" value="${base>0?base:''}" 
-        oninput="window.gc.updateBase(${item.id},this.value)" 
-        placeholder="Base"
-        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:right;background:${item.totalManual&&!item.precio?'#f0f9ff':''}">
-      <div id="iva_${item.id}" style="padding:6px;text-align:right;font-size:12px;color:var(--text-sec)">
-        $${(item.precio>0?ivaVal:ivaValCalc).toLocaleString('es-CO',{maximumFractionDigits:0})}
+      <input type="number" min="1" value="${item.cantidad||1}"
+        oninput="window.gc.updateItem(${item.id},'cantidad',this.value)"
+        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:center;background:var(--blanco)">
+      <input type="number" min="0" id="base_${item.id}" value="${base>0?base:''}"
+        oninput="window.gc.updateBase(${item.id},this.value)"
+        placeholder="Precio base"
+        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:right;background:var(--blanco)">
+      <div style="padding:6px;text-align:right;font-size:11px;color:${impVal>0?'var(--azul)':'var(--text-ter)'};font-weight:500">
+        ${tieneProd ? `<div style="font-size:9px;color:var(--text-ter);margin-bottom:2px">${impLabel}</div>` : ''}
+        <div>$${impVal.toLocaleString('es-CO',{maximumFractionDigits:0})}</div>
       </div>
-      <input type="number" min="0" id="totinput_${item.id}" value="${total>0&&!item.precio?total:''}"
+      <input type="number" min="0" id="totinput_${item.id}" value="${totalManual>0&&!base?totalManual:totalCalc>0?totalCalc:''}"
         oninput="window.gc.updateTotal(${item.id},this.value)"
         placeholder="Total"
-        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:right;font-weight:600;background:${item.precio?'#f0f9ff':''}">
-      ${wItems.length > 1 ? `<button onclick="window.gc.removeItem(${item.id})" style="background:none;border:none;cursor:pointer;color:var(--error);font-size:16px;padding:0">×</button>` : '<div></div>'}
+        style="padding:6px;border:1px solid var(--borde);border-radius:8px;font-size:12px;width:100%;text-align:right;font-weight:600;background:var(--blanco)">
+      ${wItems.length > 1
+        ? `<button onclick="window.gc.removeItem(${item.id})" style="background:none;border:none;cursor:pointer;color:var(--error);font-size:18px;padding:0;line-height:1">×</button>`
+        : '<div></div>'}
     </div>`;
   }).join('');
 }
@@ -3847,7 +3857,7 @@ window.gc.exportContable = async function() {
     const chunk = ids.slice(i, i + chunkSize);
     const { data } = await sb.from('gastos').select(`
       *, categorias(nombre),
-      subcategorias(nombre, cuenta_contable, cuenta_iva, cuenta_retencion, pct_retencion, base_retencion_compras, base_retencion_servicios),
+      subcategorias(nombre, cuenta_contable, cuenta_contable_5, cuenta_iva, cuenta_retencion, pct_retencion, base_retencion_compras, base_retencion_servicios),
       proveedores(nit, razon_social, nombre_comercial, direccion, telefono, regimen_tributario),
       sedes(nombre), gasto_items(*)
     `).in('id', chunk).order('fecha', { ascending: true });
@@ -3878,8 +3888,9 @@ window.gc.exportContable = async function() {
 
     const grupos = {};
     for (const item of items) {
-      const cta = sub.cuenta_contable || '529595';
       const iva = parseFloat(item.iva_pct) || 0;
+      // Cuenta del gasto: si iva=5 y existe cuenta_contable_5, usarla
+      const cta = (iva === 5 && sub.cuenta_contable_5) ? sub.cuenta_contable_5 : (sub.cuenta_contable || '529595');
       const cant = parseFloat(item.cantidad||1);
       let base = 0;
       if (parseFloat(item.precio||0) > 0) {
@@ -3895,12 +3906,19 @@ window.gc.exportContable = async function() {
     if (!items.length) {
       grupos['default'] = {cta: sub.cuenta_contable||'529595', iva:0, base:Math.round(gasto.valor||0), ivaVal:0};
     }
+    // Nota: sin ítems no hay % de IVA conocido, se usa cuenta_contable estándar
 
     let totalDeb = 0, totalCred = 0;
     for (const g of Object.values(grupos)) {
       const f1 = [...bf]; f1[7]=g.cta; f1[8]='FACT '+nroFac+' GASTO'; f1[9]=g.base; f1[10]=0; filas.push(f1); totalDeb+=g.base;
       if (g.ivaVal > 0 && sub.cuenta_iva) {
-        const f2=[...bf]; f2[7]=sub.cuenta_iva; f2[8]='FACT '+nroFac+' IVA'; f2[9]=g.ivaVal; f2[10]=0; f2[11]=g.base; f2[12]=g.iva; filas.push(f2); totalDeb+=g.ivaVal;
+        // Seleccionar cuenta IVA según % real del ítem
+        // Si la subcategoría tiene cuenta configurada para ese % → usarla
+        // Si el % es 5% siempre usar 24080209, si es 19% usar la de la sub
+        let ctaIva = sub.cuenta_iva;
+        if (g.iva === 5) ctaIva = '24080209';
+        else if (g.iva === 19 || g.iva === 8) ctaIva = sub.cuenta_iva || '24080211';
+        const f2=[...bf]; f2[7]=ctaIva; f2[8]='FACT '+nroFac+' IVA'; f2[9]=g.ivaVal; f2[10]=0; f2[11]=g.base; f2[12]=g.iva; filas.push(f2); totalDeb+=g.ivaVal;
       }
       const pctRet = parseFloat(sub.pct_retencion)||0;
       const nitLimpio = nit.replace(/[^0-9]/g,'');
