@@ -3335,9 +3335,8 @@ function renderGastos(data) {
     const cat = g.categorias?.nombre || ''; const pv = g.proveedores || {};
     const fechaReg = g.fecha_registro ? new Date(g.fecha_registro).toLocaleDateString('es-CO') : g.fecha || '';
     const fechaFac = g.fecha_factura || '—';
-    const tipoIcon = g.tipo_documento === 'papel' ? '🧾' : g.tipo_documento === 'recibo' ? '💵' : '🖥️';
     return `<tr>
-      <td><div style="font-size:12px;font-weight:500">${fechaReg}</div><div style="font-size:10px;color:var(--text-sec)">Fac: ${fechaFac}</div><div style="font-size:10px">${tipoIcon}</div></td>
+      <td><div style="font-size:12px;font-weight:500">${fechaReg}</div><div style="font-size:10px;color:var(--text-sec)">Fac: ${fechaFac}</div></td>
       <td><span class="badge ${CAT_CLASS[cat] || ''}">${cat}</span></td>
       <td style="color:var(--text-sec)">${g.subcategorias?.nombre || ''}</td>
       <td>${pv.nombre_comercial || pv.razon_social || ''}</td>
@@ -3455,11 +3454,6 @@ function renderWizard() {
     body.innerHTML = `<p style="font-size:13px;color:var(--text-sec);margin-bottom:1rem">Subcategoría en <strong>${wData.catNombre}</strong></p>
       <div class="opt-grid">${filtSubs.map(s => `<button class="opt-btn ${wData.subId === s.id ? 'sel' : ''}" onclick="window.gc.selW('subId','${s.id}','subNombre','${s.nombre}')"><div class="opt-name">${s.nombre}</div></button>`).join('')}</div>`;
 
-  } else if (wStep === 2) {
-    const filtSubs = subs.filter(s => s.categoria_id === wData.catId);
-    body.innerHTML = `<p style="font-size:13px;color:var(--text-sec);margin-bottom:1rem">Subcategoría en <strong>${wData.catNombre}</strong></p>
-      <div class="opt-grid">${filtSubs.map(s => `<button class="opt-btn ${wData.subId === s.id ? 'sel' : ''}" onclick="window.gc.selW('subId','${s.id}','subNombre','${s.nombre}')"><div class="opt-name">${s.nombre}</div></button>`).join('')}</div>`;
-
   } else if (wStep === 3) {
     // TODOS los proveedores sin filtrar por categoría
     const lista = [...provs].sort((a,b) => (a.nombre_comercial||a.razon_social).localeCompare(b.nombre_comercial||b.razon_social));
@@ -3493,7 +3487,7 @@ function renderWizard() {
           <input type="date" id="wFechaFac" value="${now.toISOString().split('T')[0]}" max="${now.toISOString().split('T')[0]}">
         </div>
         <div class="form-group">
-          <label>Número de factura <span style="font-size:11px;color:var(--text-sec)">(solo números)</span></label>
+          <label>Número de factura <span style="color:var(--error)">*</span> <span style="font-size:11px;color:var(--text-sec)">(obligatorio)</span></label>
           <input type="text" id="wNumFac" placeholder="Ej: 001234" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         </div>
       </div>
@@ -3701,6 +3695,7 @@ async function saveGasto() {
   const total = calcTotal();
 
   if (!fechaFac) { alert('Ingresa la fecha de la factura'); return; }
+  if (!numFac) { alert('El número de factura es obligatorio'); document.getElementById('wNumFac')?.focus(); return; }
   if (wItems.length === 0 || wItems.every(i => (!i.precio || i.precio <= 0) && (!i.totalManual || i.totalManual <= 0))) {
     alert('Agrega al menos un ítem con precio o total'); return;
   }
@@ -3727,8 +3722,8 @@ async function saveGasto() {
     valor: total,
     fecha: fechaFac,
     fecha_factura: fechaFac,
-    tipo_documento: wData.tipoDoc || 'electronica',
     numero_factura: numFac,
+    tipo_documento: wData.tipoDoc || 'electronica',
     foto_url,
     fecha_registro: new Date().toISOString()
   }).select(`*, categorias(nombre), subcategorias(nombre), proveedores(nit,razon_social,nombre_comercial), sedes(nombre)`).single();
@@ -3865,7 +3860,7 @@ window.gc.exportContable = async function() {
   const filas = [];
 
   for (const gasto of gastos) {
-    if (gasto.tipo_documento === 'recibo') continue; // Recibos no van a contabilidad
+    if (gasto.tipo_documento === 'recibo') continue;
     const pv = gasto.proveedores || {};
     const sub = gasto.subcategorias || {};
     const sede = gasto.sedes?.nombre || '';
@@ -3911,7 +3906,6 @@ window.gc.exportContable = async function() {
       const nitLimpio = nit.replace(/[^0-9]/g,'');
       const esAutoretenedor = AUTORETENEDORES.has(nitLimpio);
       const esSimple = pv.regimen_tributario === 'SIMPLE';
-      // Retención cuenta 52952505: solo si base >= 209000, no autoretenedor, no simple
       const baseMinRet = g.cta === '52952505' ? 209000 : 0;
       const aplicaRetencion = sub.cuenta_retencion && pctRet > 0 && !esSimple && !esAutoretenedor && g.base >= baseMinRet;
       if (aplicaRetencion) {
@@ -3927,7 +3921,6 @@ window.gc.exportContable = async function() {
     const fC=[...bf]; fC[7]=CUENTA_CREDITO; fC[8]='FACT '+nroFac+' CXP'; fC[9]=0; fC[10]=totalDeb-totalCred; filas.push(fC);
   }
 
-  // Generar Excel con SheetJS
   const COLS = ['prefijo','tipodoc','documento','anio','mes','dia','cedula','cuenta','concepto','debito','credito','valor_base','porcentaje','observacion','apellido1','apellido2','nombre1','nombre2','dirter','telter','codciu','cencos','razonsoc','pre_dcto','nrodoc'];
   const NUM_COLS = new Set([3,4,5,9,10,11,12]);
   const wsData = [COLS, ...filas.map(f =>
@@ -3976,11 +3969,22 @@ function renderBarData(elId, arr) {
 }
 
 // ── PROVEEDORES ──────────────────────────────────────────────
-function renderProveedores() {
+function renderProveedores(filtro) {
+  const lista = filtro
+    ? provs.filter(p => (p.nombre_comercial||p.razon_social||'').toLowerCase().includes(filtro) || (p.nit||'').includes(filtro))
+    : provs;
   if (!provs.length) { document.getElementById('provTable').innerHTML = '<p style="color:var(--text-sec)">No hay proveedores.</p>'; return; }
-  document.getElementById('provTable').innerHTML = `<div class="table-card"><table><thead><tr>
+  document.getElementById('provTable').innerHTML = `
+    <div style="margin-bottom:12px;position:relative">
+      <input id="provBuscador" type="text" placeholder="🔍 Buscar por nombre o NIT..."
+        oninput="renderProveedores(this.value.toLowerCase().trim())"
+        value="${filtro||''}"
+        style="width:100%;padding:9px 14px;border:1.5px solid var(--borde);border-radius:var(--radio);font-size:14px;font-family:'DM Sans',sans-serif;outline:none">
+      ${filtro ? `<span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text-sec)">${lista.length} resultado${lista.length!==1?'s':''}</span>` : ''}
+    </div>
+    <div class="table-card"><table><thead><tr>
     <th>NIT</th><th>Razón Social</th><th>Nombre comercial</th><th>Ciudad</th><th>Correo</th><th>Teléfono</th><th>Categoría</th><th></th>
-  </tr></thead><tbody>${provs.map(p => `<tr>
+  </tr></thead><tbody>${lista.map(p => `<tr>
     <td style="font-family:'DM Mono',monospace;font-weight:500">${p.nit}</td>
     <td>${p.razon_social}</td>
     <td style="color:var(--text-sec)">${p.nombre_comercial||'—'}</td>
@@ -4057,6 +4061,7 @@ window.gc.saveProv = async function() {
     if (data) provs.push(data);
   }
   window.gc.closeProvModal(); renderProveedores();
+  setTimeout(() => document.getElementById('provBuscador')?.focus(), 100);
 };
 
 // ── ADMIN ────────────────────────────────────────────────────
