@@ -3970,21 +3970,32 @@ function renderBarData(elId, arr) {
 
 // ── PROVEEDORES ──────────────────────────────────────────────
 function renderProveedores(filtro) {
-  const lista = filtro
-    ? provs.filter(p => (p.nombre_comercial||p.razon_social||'').toLowerCase().includes(filtro) || (p.nit||'').includes(filtro))
+  const q = filtro !== undefined ? filtro : (document.getElementById('provBuscador')?.value || '').toLowerCase().trim();
+  const lista = q
+    ? provs.filter(p => (p.nombre_comercial||p.razon_social||'').toLowerCase().includes(q) || (p.nit||'').includes(q))
     : provs;
-  if (!provs.length) { document.getElementById('provTable').innerHTML = '<p style="color:var(--text-sec)">No hay proveedores.</p>'; return; }
-  document.getElementById('provTable').innerHTML = `
-    <div style="margin-bottom:12px;position:relative">
-      <input id="provBuscador" type="text" placeholder="🔍 Buscar por nombre o NIT..."
-        oninput="renderProveedores(this.value.toLowerCase().trim())"
-        value="${filtro||''}"
-        style="width:100%;padding:9px 14px;border:1.5px solid var(--borde);border-radius:var(--radio);font-size:14px;font-family:'DM Sans',sans-serif;outline:none">
-      ${filtro ? `<span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text-sec)">${lista.length} resultado${lista.length!==1?'s':''}</span>` : ''}
-    </div>
-    <div class="table-card"><table><thead><tr>
+
+  // Primera vez: crear el buscador fijo + contenedor tabla
+  if (!document.getElementById('provBuscador')) {
+    document.getElementById('provTable').innerHTML = `
+      <div style="margin-bottom:12px;position:relative">
+        <input id="provBuscador" type="text" placeholder="🔍 Buscar por nombre o NIT..."
+          oninput="renderProveedores()"
+          style="width:100%;padding:9px 14px;border:1.5px solid var(--borde);border-radius:var(--radio);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box">
+        <span id="provCount" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text-sec)"></span>
+      </div>
+      <div id="provTableBody"></div>`;
+  }
+
+  // Siempre actualizar solo la tabla y el contador
+  const countEl = document.getElementById('provCount');
+  if (countEl && q) countEl.textContent = lista.length + ' resultado' + (lista.length!==1?'s':'');
+  else if (countEl) countEl.textContent = '';
+
+  if (!provs.length) { document.getElementById('provTableBody').innerHTML = '<p style="color:var(--text-sec)">No hay proveedores.</p>'; return; }
+  document.getElementById('provTableBody').innerHTML = `<div class="table-card"><table><thead><tr>
     <th>NIT</th><th>Razón Social</th><th>Nombre comercial</th><th>Ciudad</th><th>Correo</th><th>Teléfono</th><th>Categoría</th><th></th>
-  </tr></thead><tbody>${lista.map(p => `<tr>
+  </tr></thead><tbody>${lista.length ? lista.map(p => `<tr>
     <td style="font-family:'DM Mono',monospace;font-weight:500">${p.nit}</td>
     <td>${p.razon_social}</td>
     <td style="color:var(--text-sec)">${p.nombre_comercial||'—'}</td>
@@ -3993,7 +4004,7 @@ function renderProveedores(filtro) {
     <td>${p.telefono||'—'}</td>
     <td><span class="badge ${CAT_CLASS[p.categorias?.nombre]||''}">${p.categorias?.nombre||'—'}</span></td>
     <td><button class="btn-sec" style="padding:4px 10px;font-size:12px" onclick="window.gc.editProv('${p.id}')">Editar</button></td>
-  </tr>`).join('')}</tbody></table></div>`;
+  </tr>`).join('') : '<tr><td colspan="8"><div class="empty-state"><p>No se encontraron proveedores</p></div></td></tr>'}</tbody></table></div>`;
 }
 
 window.gc.openProvModal = function(id) {
