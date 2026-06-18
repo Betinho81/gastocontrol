@@ -3969,6 +3969,7 @@ function renderBarData(elId, arr) {
 }
 
 // ── PROVEEDORES ──────────────────────────────────────────────
+window.gc.renderProveedores = renderProveedores;
 function renderProveedores(filtro) {
   const q = filtro !== undefined ? filtro : (document.getElementById('provBuscador')?.value || '').toLowerCase().trim();
   const lista = q
@@ -3980,7 +3981,7 @@ function renderProveedores(filtro) {
     document.getElementById('provTable').innerHTML = `
       <div style="margin-bottom:12px;position:relative">
         <input id="provBuscador" type="text" placeholder="🔍 Buscar por nombre o NIT..."
-          oninput="renderProveedores()"
+          oninput="window.gc.renderProveedores()"
           style="width:100%;padding:9px 14px;border:1.5px solid var(--borde);border-radius:var(--radio);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box">
         <span id="provCount" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text-sec)"></span>
       </div>
