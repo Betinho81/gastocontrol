@@ -3921,14 +3921,21 @@ window.gc.exportContable = async function() {
     const items = gasto.gasto_items || [];
     const nroFac = gasto.numero_factura || '';
     const fecha = gasto.fecha_factura || gasto.fecha || '';
-    const d = fecha ? new Date(fecha) : new Date();
+    let anioF, mesF, diaF;
+    if (fecha) {
+      const [yy, mm, dd] = fecha.split('-').map(Number);
+      anioF = yy; mesF = mm; diaF = dd;
+    } else {
+      const hoy = new Date();
+      anioF = hoy.getFullYear(); mesF = hoy.getMonth()+1; diaF = hoy.getDate();
+    }
     const nit = (pv.nit || '').replace(/[^0-9]/g, '');
     const cencos = CENCOS[sede] || 7;
     const razonSoc = (pv.razon_social || '').trim();
     const dir = (pv.direccion || '').trim() || '0';
     const tel = (pv.telefono || '').replace(/[^0-9]/g, '') || '0';
     const obs = ('FACT ' + nroFac + ' ' + (gasto.descripcion || '')).toUpperCase().substring(0, 60);
-    const bf = ['','CPP',nroFac,d.getFullYear(),d.getMonth()+1,d.getDate(),nit,'','',0,0,0,0,obs,'0','0','0','0',dir,tel,'',cencos,razonSoc,'',nroFac];
+    const bf = ['','CPP',nroFac,anioF,mesF,diaF,nit,'','',0,0,0,0,obs,'0','0','0','0',dir,tel,'',cencos,razonSoc,'',nroFac];
 
     const grupos = {};
     for (const item of items) {
@@ -4149,10 +4156,164 @@ window.gc.saveProv = async function() {
   setTimeout(() => document.getElementById('provBuscador')?.focus(), 100);
 };
 
+// ── BACKUP GENERAL ───────────────────────────────────────────
+async function fetchAllTable(table, select) {
+  let all = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await sb.from(table).select(select || '*').range(from, from + pageSize - 1);
+    if (error || !data || !data.length) break;
+    all = all.concat(data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
+
+function flattenForExport(rows) {
+  // Convierte objetos anidados (joins) y arrays a string plano para Excel/CSV
+  return rows.map(r => {
+    const out = {};
+    for (const k in r) {
+      const v = r[k];
+      if (v === null || v === undefined) out[k] = '';
+      else if (typeof v === 'object') out[k] = JSON.stringify(v);
+      else out[k] = v;
+    }
+    return out;
+  });
+}
+
+window.gc.backupCompleto = async function(formato) {
+  const btn = document.getElementById('btnBackup');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando backup...'; }
+  try {
+    const tablas = {
+      gastos: 'gastos',
+      gasto_items: 'gasto_items',
+      proveedores: 'proveedores',
+      categorias: 'categorias',
+      subcategorias: 'subcategorias',
+      sedes: 'sedes',
+      usuarios: 'usuarios',
+      productos: 'productos'
+    };
+    const resultados = {};
+    for (const [key, table] of Object.entries(tablas)) {
+      resultados[key] = flattenForExport(await fetchAllTable(table));
+    }
+
+    const fechaHoy = new Date().toISOString().split('T')[0];
+
+    if (formato === 'excel') {
+      const wb = XLSX.utils.book_new();
+      for (const [key, rows] of Object.entries(resultados)) {
+        const ws = rows.length ? XLSX.utils.json_to_sheet(rows) : XLSX.utils.aoa_to_sheet([['(sin datos)']]);
+        XLSX.utils.book_append_sheet(wb, ws, key.substring(0, 31));
+      }
+      XLSX.writeFile(wb, `BACKUP_GASTOCONTROL_${fechaHoy}.xlsx`);
+    } else {
+      // CSV: un archivo por tabla, empaquetados en ZIP
+      if (!window.JSZip) await loadJSZip();
+      const zip = new window.JSZip();
+      for (const [key, rows] of Object.entries(resultados)) {
+        if (!rows.length) { zip.file(`${key}.csv`, ''); continue; }
+        const headers = Object.keys(rows[0]);
+        const csvLines = [headers.join(',')];
+        for (const row of rows) {
+          csvLines.push(headers.map(h => {
+            const val = String(row[h] ?? '').replace(/"/g, '""');
+            return /[",\n]/.test(val) ? `"${val}"` : val;
+          }).join(','));
+        }
+        zip.file(`${key}.csv`, '\uFEFF' + csvLines.join('\n'));
+      }
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `BACKUP_GASTOCONTROL_CSV_${fechaHoy}.zip`;
+      a.click();
+    }
+    alert('Backup generado correctamente.');
+  } catch (err) {
+    console.error(err);
+    alert('Error generando el backup: ' + (err.message || err));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📦 Backup completo'; }
+  }
+};
+
+// ── DESCARGA DE FOTOS DE FACTURAS (ZIP) ──────────────────────
+function loadJSZip() {
+  return new Promise((resolve, reject) => {
+    if (window.JSZip) return resolve();
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+window.gc.descargarFotos = async function() {
+  const btn = document.getElementById('btnFotos');
+  if (btn) { btn.disabled = true; btn.textContent = 'Preparando fotos...'; }
+  try {
+    await loadJSZip();
+    const todosGastos = await fetchAllTable('gastos', `*, proveedores(nit,nombre_comercial,razon_social), sedes(nombre)`);
+    const conFoto = todosGastos.filter(g => g.foto_url);
+    if (!conFoto.length) { alert('No hay facturas con foto registrada.'); return; }
+
+    const zip = new window.JSZip();
+    let ok = 0, fail = 0;
+    const total = conFoto.length;
+
+    for (let i = 0; i < conFoto.length; i++) {
+      const g = conFoto[i];
+      if (btn) btn.textContent = `Descargando ${i+1}/${total}...`;
+      try {
+        const resp = await fetch(g.foto_url);
+        if (!resp.ok) throw new Error('fetch failed');
+        const blob = await resp.blob();
+        const ext = (g.foto_url.split('.').pop() || 'jpg').split('?')[0].substring(0, 4);
+        const fecha = (g.fecha_factura || g.fecha || 'sinfecha').toString();
+        const sede = (g.sedes?.nombre || 'sinsede').replace(/[^a-zA-Z0-9]/g, '_');
+        const prov = (g.proveedores?.nombre_comercial || g.proveedores?.razon_social || 'sinprov').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+        const numFac = (g.numero_factura || 's-f').toString().replace(/[^a-zA-Z0-9]/g, '');
+        const nombreArchivo = `${fecha}_${sede}_${prov}_FAC${numFac}.${ext}`;
+        zip.file(nombreArchivo, blob);
+        ok++;
+      } catch (e) {
+        fail++;
+      }
+    }
+
+    if (btn) btn.textContent = 'Empaquetando ZIP...';
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `FOTOS_FACTURAS_GASTOCONTROL_${new Date().toISOString().split('T')[0]}.zip`;
+    a.click();
+    alert(`Fotos empaquetadas: ${ok} exitosas` + (fail ? `, ${fail} fallidas` : '') + '.');
+  } catch (err) {
+    console.error(err);
+    alert('Error descargando fotos: ' + (err.message || err));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🖼️ Descargar todas las fotos'; }
+  }
+};
+
 // ── ADMIN ────────────────────────────────────────────────────
 async function renderAdmin() {
   const { data: usuarios } = await sb.from('usuarios').select('*, sedes(nombre)');
   document.getElementById('adminUsers').innerHTML = `
+    <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <div style="font-size:13px;font-weight:600;color:var(--text);width:100%">💾 Respaldo de información</div>
+      <button id="btnBackup" class="btn-sec" style="padding:8px 14px;font-size:12px" onclick="window.gc.backupCompleto('excel')">📦 Backup completo (Excel)</button>
+      <button class="btn-sec" style="padding:8px 14px;font-size:12px" onclick="window.gc.backupCompleto('csv')">📄 Backup completo (CSV/ZIP)</button>
+      <button id="btnFotos" class="btn-sec" style="padding:8px 14px;font-size:12px" onclick="window.gc.descargarFotos()">🖼️ Descargar todas las fotos</button>
+    </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
       <button class="btn-new" onclick="window.gc.openUserModal()">+ Nuevo usuario</button>
     </div>` +
