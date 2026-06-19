@@ -18,8 +18,6 @@
     }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
     .hidden { display: none !important; }
-
-    /* NAV */
     .topnav { background: var(--blanco); border-bottom: 1px solid var(--borde); height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; }
     .nav-left { display: flex; align-items: center; gap: 10px; }
     .nav-logo { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
@@ -28,32 +26,22 @@
     .user-name { font-size: 13px; color: var(--text-sec); }
     .btn-logout { background: none; border: 1px solid var(--borde); border-radius: 8px; padding: 5px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; color: var(--text-sec); }
     .btn-logout:hover { background: var(--bg); }
-
-    /* TABS */
     .tabs { background: var(--blanco); border-bottom: 1px solid var(--borde); display: flex; padding: 0 1.5rem; gap: 2px; overflow-x: auto; flex-shrink: 0; }
     .tab { padding: 14px 16px; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-sec); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color .15s; }
     .tab:hover { color: var(--text); }
     .tab.active { color: var(--azul); border-bottom-color: var(--azul); }
-
-    /* CONTENT */
     .content { flex: 1; padding: 1.5rem; overflow-y: auto; max-width: 1200px; width: 100%; margin: 0 auto; }
-
-    /* METRIC CARDS */
     .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
     .metric-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); padding: 1rem 1.25rem; }
     .metric-card .m-label { font-size: 11px; color: var(--text-sec); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
     .metric-card .m-value { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
     .metric-card .m-sub { font-size: 11px; color: var(--text-ter); margin-top: 3px; }
-
-    /* SECTION HEADER */
     .sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
     .sec-title { font-size: 15px; font-weight: 600; color: var(--text); }
     .btn-new { background: var(--azul); color: #fff; border: none; border-radius: var(--radio); padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s; }
     .btn-new:hover { background: #154360; }
     .btn-outline { background: var(--blanco); color: var(--text); border: 1px solid var(--borde); border-radius: var(--radio); padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
     .btn-outline:hover { background: var(--bg); }
-
-    /* TABLE */
     .table-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; overflow: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
     thead { background: var(--bg); }
@@ -75,8 +63,6 @@
     .lock-badge { font-size: 11px; color: var(--text-ter); display: flex; align-items: center; gap: 3px; }
     .empty-state { text-align: center; padding: 3rem; color: var(--text-sec); }
     .empty-state .empty-icon { font-size: 36px; margin-bottom: 0.75rem; }
-
-    /* FILTER PANEL */
     .filter-panel { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
     .filter-title { font-size: 12px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
@@ -84,8 +70,6 @@
     .filter-group select, .filter-group input { width: 100%; padding: 7px 10px; border: 1px solid var(--borde); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--blanco); outline: none; }
     .filter-group select:focus, .filter-group input:focus { border-color: var(--azul-med); }
     .filter-actions { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; }
-
-    /* BAR CHART */
     .chart-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
     .chart-title { font-size: 13px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 1rem; }
     .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
@@ -95,8 +79,6 @@
     .bar-val { width: 90px; text-align: right; font-weight: 600; font-size: 11px; font-family: 'DM Mono', monospace; }
     .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
     @media(max-width:640px) { .charts-row { grid-template-columns: 1fr; } }
-
-    /* WIZARD MODAL */
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
     .modal { background: var(--blanco); border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
     .modal-hdr { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--borde); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--blanco); z-index: 1; }
@@ -117,8 +99,6 @@
     .btn-prim { background: var(--azul); color: #fff; border: none; border-radius: var(--radio); padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s; }
     .btn-prim:hover { background: #154360; }
     .btn-prim:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* OPTION GRID */
     .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .opt-btn { background: var(--bg); border: 1.5px solid var(--borde); border-radius: var(--radio); padding: 12px; cursor: pointer; text-align: left; transition: border-color .15s, background .15s; }
     .opt-btn:hover { border-color: var(--azul-med); background: var(--azul-clar); }
@@ -130,14 +110,9 @@
     .prov-opt.sel { border-color: var(--azul); background: var(--azul-clar); }
     .prov-opt .pn { font-weight: 600; font-size: 13px; }
     .prov-opt .ps { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
-
-    /* FORM */
     .form-group { margin-bottom: 1rem; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 9px 12px; border: 1px solid var(--borde); border-radius: var(--radio);
-      font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--blanco); outline: none;
-    }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--borde); border-radius: var(--radio); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--blanco); outline: none; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--azul-med); box-shadow: 0 0 0 3px rgba(46,134,193,0.1); }
     .form-group textarea { resize: vertical; min-height: 70px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -205,22 +180,33 @@
       </div>
     </div>
   </div>
-    <div class="filter-panel">
-    <div class="filter-title">Filtros</div>
+  <div class="table-card">
+    <table><thead><tr>
+      <th>Fecha</th><th>Categoría</th><th>Subcategoría</th><th>Proveedor</th><th>NIT</th><th>Descripción</th><th>Valor</th><th>Foto</th><th></th>
+    </tr></thead><tbody id="gastosTable"></tbody></table>
+  </div>
+</div>
 
-    <!-- Sedes chips -->
+<!-- REPORTES -->
+<div class="content hidden" id="panelReportes">
+  <div class="sec-header">
+    <span class="sec-title">Reportes</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn-outline" onclick="window.gc.exportCSV()">↓ CSV</button>
+      <button class="btn-new" onclick="window.gc.exportExcel()">↓ Excel</button>
+      <button class="btn-new" style="background:#1D9E75" onclick="window.gc.exportContable()">↓ Reporte Contable</button>
+    </div>
+  </div>
+  <div class="filter-panel">
+    <div class="filter-title">Filtros</div>
     <div style="margin-bottom:12px">
       <div style="font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Sedes</div>
       <div id="fSede" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
-
-    <!-- Tipo documento chips -->
     <div style="margin-bottom:12px">
       <div style="font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Tipo de documento</div>
       <div id="fTipoDoc" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
-
-    <!-- Otros filtros -->
     <div class="filter-grid">
       <div class="filter-group"><label>Categoría</label>
         <select id="fCat"><option value="">Todas</option></select></div>
@@ -236,38 +222,6 @@
     <div class="filter-actions">
       <button class="btn-sec" onclick="window.gc.limpiarFiltros()">Limpiar</button>
       <button class="btn-prim" onclick="window.gc.applyFilters()">🔍 Aplicar filtros</button>
-    </div>
-  </div>
-</div>
-<!-- REPORTES -->
-<div class="content hidden" id="panelReportes">
-  <div class="sec-header">
-    <span class="sec-title">Reportes</span>
-    <div style="display:flex;gap:8px">
-      <button class="btn-outline" onclick="window.gc.exportCSV()">↓ CSV</button>
-      <button class="btn-new" onclick="window.gc.exportExcel()">↓ Excel</button>
-      <button class="btn-new" style="background:#1D9E75" onclick="window.gc.exportContable()">↓ Reporte Contable</button>
-    </div>
-  </div>
-  <div class="filter-panel">
-    <div class="filter-title">Filtros</div>
-    <div class="filter-grid">
-      <div class="filter-group" style="grid-column:1/-1"><label>Sedes (selecciona una o varias)</label>
-  <div id="fSede" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--borde);border-radius:8px;background:var(--blanco);min-height:38px"></div>
-</div>
-      <div class="filter-group"><label>Categoría</label>
-        <select id="fCat" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
-      <div class="filter-group"><label>Subcategoría</label>
-        <select id="fSub" onchange="window.gc.applyFilters()"><option value="">Todas</option></select></div>
-      <div class="filter-group"><label>Proveedor</label>
-        <select id="fProv" onchange="window.gc.applyFilters()"><option value="">Todos</option></select></div>
-      <div class="filter-group"><label>Desde</label>
-        <input type="date" id="fDesde" onchange="window.gc.applyFilters()"></div>
-      <div class="filter-group"><label>Hasta</label>
-        <input type="date" id="fHasta" onchange="window.gc.applyFilters()"></div>
-    </div>
-    <div class="filter-actions">
-      <button class="btn-sec" onclick="window.gc.limpiarFiltros()">Limpiar</button>
     </div>
   </div>
   <div class="metric-grid" id="rMetrics"></div>
@@ -342,6 +296,13 @@
       <div class="form-row">
         <div class="form-group"><label>Correo</label><input id="pCorreo" type="email" placeholder="info@empresa.com"></div>
         <div class="form-group"><label>Teléfono</label><input id="pTel" placeholder="3001234567"></div>
+      </div>
+      <div class="form-group"><label>Régimen tributario</label>
+        <select id="pRegimen">
+          <option value="ORDINARIO">Ordinario</option>
+          <option value="SIMPLE">Simple de tributación</option>
+          <option value="GRAN_CONTRIBUYENTE">Gran contribuyente</option>
+        </select>
       </div>
       <div class="form-group"><label>Categoría principal</label>
         <select id="pCat"><option value="">Seleccionar...</option></select></div>
