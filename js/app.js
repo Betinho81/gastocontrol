@@ -3768,12 +3768,30 @@ async function saveGasto() {
 async function initFiltros() {
   const sedeEl = document.getElementById('fSede'); if (!sedeEl) return;
   const sedesDisp = esAdmin ? sedes : sedes.filter(s => s.id === user.sedePropiaId);
+
+  // Sedes como chips visuales
   sedeEl.innerHTML = sedesDisp.map(s =>
-    `<label style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap">
-      <input type="checkbox" class="sede-chk" value="${s.id}" style="accent-color:var(--azul);width:15px;height:15px">
+    `<label style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;border:1.5px solid var(--borde);background:var(--bg);transition:all .15s;white-space:nowrap" class="sede-chip-lbl">
+      <input type="checkbox" class="sede-chk" value="${s.id}" style="display:none" onchange="window.gc.toggleSedeChip(this)">
       ${s.nombre}
     </label>`
   ).join('');
+
+  // Filtro tipo documento
+  const tipoEl = document.getElementById('fTipoDoc');
+  if (tipoEl) {
+    tipoEl.innerHTML = [
+      {id:'electronica', icon:'🖥️', label:'Electrónica'},
+      {id:'papel', icon:'🧾', label:'Papel'},
+      {id:'recibo', icon:'💵', label:'Recibo'},
+    ].map(t =>
+      `<label style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;border:1.5px solid var(--borde);background:var(--bg);transition:all .15s;white-space:nowrap" class="tipo-chip-lbl">
+        <input type="checkbox" class="tipo-chk" value="${t.id}" style="display:none" onchange="window.gc.toggleTipoChip(this)">
+        ${t.icon} ${t.label}
+      </label>`
+    ).join('');
+  }
+
   const catEl = document.getElementById('fCat'); catEl.innerHTML = '<option value="">Todas</option>';
   cats.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.nombre; catEl.appendChild(o); });
   const subEl = document.getElementById('fSub'); subEl.innerHTML = '<option value="">Todas</option>';
@@ -3781,6 +3799,28 @@ async function initFiltros() {
   const provEl = document.getElementById('fProv'); provEl.innerHTML = '<option value="">Todos</option>';
   provs.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre_comercial || p.razon_social; provEl.appendChild(o); });
 }
+
+// Toggle visual chips sedes
+window.gc.toggleSedeChip = function(chk) {
+  const lbl = chk.closest('label');
+  if (chk.checked) {
+    lbl.style.background = 'var(--azul)'; lbl.style.color = '#fff'; lbl.style.borderColor = 'var(--azul)';
+  } else {
+    lbl.style.background = 'var(--bg)'; lbl.style.color = ''; lbl.style.borderColor = 'var(--borde)';
+  }
+};
+
+// Toggle visual chips tipo documento
+window.gc.toggleTipoChip = function(chk) {
+  const lbl = chk.closest('label');
+  const colors = {electronica:'#1a5276', papel:'#7d4e00', recibo:'#1a7a4a'};
+  const color = colors[chk.value] || 'var(--azul)';
+  if (chk.checked) {
+    lbl.style.background = color; lbl.style.color = '#fff'; lbl.style.borderColor = color;
+  } else {
+    lbl.style.background = 'var(--bg)'; lbl.style.color = ''; lbl.style.borderColor = 'var(--borde)';
+  }
+};
 
 async function getFiltered() {
   let q = sb.from('gastos').select(`*, categorias(nombre), subcategorias(nombre), proveedores(nit,razon_social,nombre_comercial,direccion,correo), sedes(nombre)`);
@@ -3790,6 +3830,9 @@ async function getFiltered() {
     if (sedesCheck.length === 1) q = q.eq('sede_id', sedesCheck[0]);
     else if (sedesCheck.length > 1) q = q.in('sede_id', sedesCheck);
   }
+  const tiposCheck = [...document.querySelectorAll('.tipo-chk:checked')].map(c => c.value);
+  if (tiposCheck.length === 1) q = q.eq('tipo_documento', tiposCheck[0]);
+  else if (tiposCheck.length > 1) q = q.in('tipo_documento', tiposCheck);
   const vc = document.getElementById('fCat')?.value;
   const vsu = document.getElementById('fSub')?.value;
   const vp = document.getElementById('fProv')?.value;
@@ -3953,7 +3996,16 @@ window.gc.exportContable = async function() {
 };
 
 window.gc.limpiarFiltros = function() {
-  document.querySelectorAll('.sede-chk').forEach(c => c.checked = false);
+  document.querySelectorAll('.sede-chk').forEach(c => {
+    c.checked = false;
+    const lbl = c.closest('label');
+    if (lbl) { lbl.style.background='var(--bg)'; lbl.style.color=''; lbl.style.borderColor='var(--borde)'; }
+  });
+  document.querySelectorAll('.tipo-chk').forEach(c => {
+    c.checked = false;
+    const lbl = c.closest('label');
+    if (lbl) { lbl.style.background='var(--bg)'; lbl.style.color=''; lbl.style.borderColor='var(--borde)'; }
+  });
   ['fCat','fSub','fProv'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['fDesde','fHasta'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   window.gc.applyFilters();
