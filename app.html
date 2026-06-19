@@ -205,13 +205,40 @@
       </div>
     </div>
   </div>
-  <div class="table-card">
-    <table><thead><tr>
-      <th>Fecha</th><th>Categoría</th><th>Subcategoría</th><th>Proveedor</th><th>NIT</th><th>Descripción</th><th>Valor</th><th>Foto</th><th></th>
-    </tr></thead><tbody id="gastosTable"></tbody></table>
+    <div class="filter-panel">
+    <div class="filter-title">Filtros</div>
+
+    <!-- Sedes chips -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Sedes</div>
+      <div id="fSede" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- Tipo documento chips -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Tipo de documento</div>
+      <div id="fTipoDoc" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- Otros filtros -->
+    <div class="filter-grid">
+      <div class="filter-group"><label>Categoría</label>
+        <select id="fCat"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Subcategoría</label>
+        <select id="fSub"><option value="">Todas</option></select></div>
+      <div class="filter-group"><label>Proveedor</label>
+        <select id="fProv"><option value="">Todos</option></select></div>
+      <div class="filter-group"><label>Desde</label>
+        <input type="date" id="fDesde"></div>
+      <div class="filter-group"><label>Hasta</label>
+        <input type="date" id="fHasta"></div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-sec" onclick="window.gc.limpiarFiltros()">Limpiar</button>
+      <button class="btn-prim" onclick="window.gc.applyFilters()">🔍 Aplicar filtros</button>
+    </div>
   </div>
 </div>
-
 <!-- REPORTES -->
 <div class="content hidden" id="panelReportes">
   <div class="sec-header">
