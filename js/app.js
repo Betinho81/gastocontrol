@@ -3294,7 +3294,7 @@ window.showTab = function(name, el) {
   ['panelGastos','panelReportes','panelProveedores','panelAdmin'].forEach(id => {
     document.getElementById(id).classList.toggle('hidden', id !== 'panel' + name.charAt(0).toUpperCase() + name.slice(1));
   });
-  if (name === 'reportes') { initFiltros(); applyFilters(); }
+  if (name === 'reportes') { initFiltros(); window.gc.applyFilters(); }
   if (name === 'proveedores') renderProveedores();
   if (name === 'admin') renderAdmin();
 };
