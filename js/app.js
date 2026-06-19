@@ -3754,7 +3754,8 @@ async function saveGasto() {
     cantidad: parseFloat(item.cantidad) || 1,
     precio: parseFloat(item.precio) || 0,
     precio_total: parseFloat(item.totalManual) || 0,
-    iva_pct: parseFloat(item.iva) || 0
+    iva_pct: parseFloat(item.iva) || 0,
+    imp_consumo_pct: parseFloat(item.ic) || 0
   }));
 
   if (itemsToInsert.length) await sb.from('gasto_items').insert(itemsToInsert);
@@ -3932,6 +3933,8 @@ window.gc.exportContable = async function() {
     const grupos = {};
     for (const item of items) {
       const iva = parseFloat(item.iva_pct) || 0;
+      const ic = parseFloat(item.imp_consumo_pct) || 0;
+      const tasaTotal = iva + ic; // para calcular base si solo hay total manual
       // Cuenta del gasto: si iva=5 y existe cuenta_contable_5, usarla
       const cta = (iva === 5 && sub.cuenta_contable_5) ? sub.cuenta_contable_5 : (sub.cuenta_contable || '529595');
       const cant = parseFloat(item.cantidad||1);
@@ -3939,29 +3942,31 @@ window.gc.exportContable = async function() {
       if (parseFloat(item.precio||0) > 0) {
         base = Math.round(parseFloat(item.precio) * cant);
       } else if (parseFloat(item.precio_total||0) > 0) {
-        base = Math.round(parseFloat(item.precio_total) / (1 + iva/100));
+        base = Math.round(parseFloat(item.precio_total) / (1 + tasaTotal/100));
       }
-      const key = cta + '_' + iva;
-      if (!grupos[key]) grupos[key] = {cta, iva, base:0, ivaVal:0};
+      const key = cta + '_' + iva + '_' + ic;
+      if (!grupos[key]) grupos[key] = {cta, iva, ic, base:0, ivaVal:0, icVal:0};
       grupos[key].base += base;
       grupos[key].ivaVal += Math.round(base * iva / 100);
+      grupos[key].icVal += Math.round(base * ic / 100);
     }
     if (!items.length) {
-      grupos['default'] = {cta: sub.cuenta_contable||'529595', iva:0, base:Math.round(gasto.valor||0), ivaVal:0};
+      grupos['default'] = {cta: sub.cuenta_contable||'529595', iva:0, ic:0, base:Math.round(gasto.valor||0), ivaVal:0, icVal:0};
     }
     // Nota: sin ítems no hay % de IVA conocido, se usa cuenta_contable estándar
 
     let totalDeb = 0, totalCred = 0;
     for (const g of Object.values(grupos)) {
       const f1 = [...bf]; f1[7]=g.cta; f1[8]='FACT '+nroFac+' GASTO'; f1[9]=g.base; f1[10]=0; filas.push(f1); totalDeb+=g.base;
-      if (g.ivaVal > 0 && sub.cuenta_iva) {
-        // Seleccionar cuenta IVA según % real del ítem
-        // Si la subcategoría tiene cuenta configurada para ese % → usarla
-        // Si el % es 5% siempre usar 24080209, si es 19% usar la de la sub
-        let ctaIva = sub.cuenta_iva;
-        if (g.iva === 5) ctaIva = '24080209';
-        else if (g.iva === 19 || g.iva === 8) ctaIva = sub.cuenta_iva || '24080211';
+      if (g.ivaVal > 0) {
+        // Cuenta IVA según % real del ítem: 5% siempre 24080209, 19% usa la de la sub o 24080211
+        let ctaIva = g.iva === 5 ? '24080209' : (sub.cuenta_iva || '24080211');
         const f2=[...bf]; f2[7]=ctaIva; f2[8]='FACT '+nroFac+' IVA'; f2[9]=g.ivaVal; f2[10]=0; f2[11]=g.base; f2[12]=g.iva; filas.push(f2); totalDeb+=g.ivaVal;
+      }
+      if (g.icVal > 0) {
+        // Impuesto al Consumo (8%, 4%, 16%) — cuenta propia, distinta de IVA
+        const ctaIC = '52956001';
+        const f2b=[...bf]; f2b[7]=ctaIC; f2b[8]='FACT '+nroFac+' IMPOCONSUMO'; f2b[9]=g.icVal; f2b[10]=0; f2b[11]=g.base; f2b[12]=g.ic; filas.push(f2b); totalDeb+=g.icVal;
       }
       const pctRet = parseFloat(sub.pct_retencion)||0;
       const nitLimpio = nit.replace(/[^0-9]/g,'');
