@@ -17,6 +17,7 @@ const PASSWORDS = {
   'cajamenorarm3@gmail.com': 'Palacio-3',
   'opticasvisionysol.auxadmon1@gmail.com': 'PAL-PEI',
   'memohrueda_19@hotmail.com': 'memo123'
+  'olgaruedamayorga@hotmail.com': 'olga1960',
 };
 
 export async function login(email, password, sedeId) {
