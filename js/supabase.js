@@ -16,7 +16,7 @@ const PASSWORDS = {
   'comint@opticasvisionysol.com.co': 'CABECERA',
   'cajamenorarm3@gmail.com': 'Palacio-3',
   'opticasvisionysol.auxadmon1@gmail.com': 'PAL-PEI',
-  'memohrueda_19@hotmail.com': 'memo123'
+  'memohrueda_19@hotmail.com': 'memo123',
   'olgaruedamayorga@hotmail.com': 'olga1960',
 };
 
